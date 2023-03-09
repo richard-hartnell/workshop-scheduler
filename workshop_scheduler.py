@@ -1,4 +1,5 @@
 from __future__ import print_function
+
 import os.path
 import pandas as pd
 from google.auth.transport.requests import Request
@@ -11,23 +12,48 @@ from googleapiclient.errors import HttpError
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID and range of a sample spreadsheet.
-instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
-instructor_spreadsheet_range = 'Sheet1!A2:AX99' #Define a range of rows. "Class Data" is a sheet name.
-schedule_spreadsheet_id = ""
+SAMPLE_SPREADSHEET_ID = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'
+SAMPLE_RANGE_NAME = 'Class Data!A2:E'       #Define a range of rows. "Class Data" is a sheet name.
+APPLICATION_SPREADSHEET_ID = '1_m04l3E4JM0jBeSAfbJmmS6IWO_5NzJaU2j18a_CYh4'
+APPLICATION_RANGE_NAME = 'Accepted!A2:E'
+SCHEDULE_SPREADSHEET_ID = '1r-smbYFeQF-gTrP6_v3L3J63mRz2exwfdPcT7v3DiRc'
 
-# Initate some local vars.
 local_schedule = []
 workshop_list = []
+slot_1000 = []
+slot_1130 = []
+slot_1430 = []
+slot_1600 = []
+slot_1730 = []
 
-# Define workshop class
+# define workshop and timeslot object classes
 class Workshop:
     def __init__(self, teacher, title, prop, diff):
-        self.teacher = teacher #stage name if given, else given name
-        self.title = title #workshop title
-        self.prop = prop #check boxes, not radio buttons
-        self.diff = diff #difficulty
+        self.teacher = teacher
+        self.title = title
+        self.prop = prop
+        self.diff = diff
+
+class Slot:
+    def __init__(self, location, time, workshop):
+        self.location = location
+        self.time = time
+        self.workshop = workshop
+    # if self.time = 1000:
+    #     slot_1000.append(self.workshop)
+    # if self.time = 1130:
+    #     slot_1130.append(self.workshop)
+    # if self.time = 1430:
+    #     slot_1430.append(self.workshop)
+    # if self.time = 1600:
+    #     slot_1600.append(self.workshop)
+    # if self.time = 1730:
+    #     slot_1730.append(self.workshop)
 
 def main():
+    """Shows basic usage of the Sheets API.
+    Prints values from a sample spreadsheet.
+    """
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -48,94 +74,92 @@ def main():
 
     try:
         service = build('sheets', 'v4', credentials=creds)
+
         # Call the Sheets API
         sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId=instructor_spreadsheet_id,  #CREATE A DICT(?) OF THIS SHEET
-                                    range=instructor_spreadsheet_range).execute()      #RANGE OF ROWS 
+        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,  #CREATE A DICT(?) OF THIS SHEET
+                                    range=SAMPLE_RANGE_NAME).execute()      #RANGE OF ROWS 
         values = result.get('values', [])
+
         if not values:
             print('No data found.')
             return
+        print('Name, Major:')
         for row in values:
-            get_workshops(row)
+            # Print columns A and E, which correspond to indices 0 and 4.
+            print('%s, %s' % (row[0], row[4]))
     except HttpError as err:
         print(err)
 
-# a function to rate class difficulty from the radio button response (1 = beginner, 3 = advanced)
-def get_workshop_difficulty(item):
-    if 'SPECIFICALLY' in item:
+def get_workshop_difficulty(ws):
+    if 'SPECIFICALLY' in ws:
         return 1
     if 'OK' in item:
         return 2
     if 'NOT' in item:
         return 3
 
-# how to pluck workshops from the instructor application
 def get_workshops(row):
-    if row[3] != '':
-        _teacher = row[3] #read in the teacher's stage name if present
+    if row[3] != ''
+        _teacher = row[3]
     else:
-        _teacher = row[2] #else, read in their given name
-    if row[16] != '': #read in the first workshop if present
+        _teacher = row[2]
+    if row[16] != '': #if "first workshop title" isn't blank,
         _title = row[16] #grab the title
         _prop = row[18] #grab the prop
         _difficulty = get_workshop_difficulty(row[19]) #grab the difficulty
         _workshop = Workshop(_teacher, _title, _prop, _difficulty) #make a new workshop object
         workshop_list.append(_workshop) #stick it in the list!
-    if row[20] != "": #read in the second workshop if present
+    if row[20] != "": #repeat as desired below
         _title = row[20]
         _prop = row[22]
         _difficulty = get_workshop_difficulty(row[23])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-    if row[24] != "": #read in the third workshop if present
+    if row[24] != "":
         _title = row[24]
         _prop = row[26]
         _difficulty = get_workshop_difficulty(row[27])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-    if row[28] != "": #read in the fourth workshop if present
+    if row[28] != "":
         _title = row[28]
         _prop = row[30]
         _difficulty = get_workshop_difficulty(row[31])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-        workshop_list.append(_workshop) 
+        workshop_list.append(_workshop)
 
-# #def schedule_a_class(class):
-    # check a row of the schedule.
-    # look for a poi class.
-    # if there's not one,
-        # find a poi class in workshop_list
-        # check to see if the teacher is in the previous or same slot
-            # if not, slot the class
 
-if __name__ == '__main__':
-    main()
 
-print(workshop_list)
+def schedule_a_workshop(Timeslot):
 
-    # # # WHAT TO DO?
+
+# # # WHAT TO DO?
+
+# first, schedule the prop jams. 
+# that will give inspo as to how to auto-sched the rest!
+
+# # READ IN THE WORKSHOPS (functions exist for this now)
 
 # # SCHEDULE THE CLASSES
-# check row for an easy or intermediate poi class
+# check row for an easy or intermediate class in Prop X
 # if one is there, pass. if not, schedule one
-
     # is_it_there = False
-    # while is_it_there = False:
-    #     for item in row:
-    #         if item.prop == 'Poi':
-    #             if item.diff == '1':
-    #             is_it_there = True
-    #             pass
-    #         else:
-    #             pass
-    #     else:
-    #         pass
-# # if not there, check if that teacher is in the same or an adjacent slot* (this might already exist)
-# # make an exception for lunch / day breaks*
-# repeat for hoop and staff
-# check row for a difficult poi class
-# if not there, schedule it
+        # while is_it_there = False:
+        #     for item in row:
+        #         if item.prop == 'Poi':
+        #             if item.diff == '1':
+        #             is_it_there = True
+        #             pass
+        #         else:
+        #             pass
+        #     else:
+        #         pass
+    # # if not there, check if that teacher is in the same or an adjacent slot* (this might already exist)
+    # # make an exception for lunch / day breaks*
+    # repeat for hoop and staff
+    # check row for a difficult poi class
+    # if not there, schedule it
 # repeat for hoop and staff
 
 # now let's infill!
@@ -145,3 +169,7 @@ print(workshop_list)
 # check to see if there's already a class in More Obscure Prop
 # if not, slap it in!
 # repeat final loop until all classes are scheduled.
+
+
+if __name__ == '__main__':
+    main()
