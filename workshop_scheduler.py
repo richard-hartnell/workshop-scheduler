@@ -12,11 +12,9 @@ from googleapiclient.errors import HttpError
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID and range of a sample spreadsheet.
-SAMPLE_SPREADSHEET_ID = '1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms'
-SAMPLE_RANGE_NAME = 'Class Data!A2:E'       #Define a range of rows. "Class Data" is a sheet name.
-APPLICATION_SPREADSHEET_ID = '1_m04l3E4JM0jBeSAfbJmmS6IWO_5NzJaU2j18a_CYh4'
-APPLICATION_RANGE_NAME = 'Accepted!A2:E'
-SCHEDULE_SPREADSHEET_ID = '1r-smbYFeQF-gTrP6_v3L3J63mRz2exwfdPcT7v3DiRc'
+instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
+instructor_spreadsheet_range = 'Sheet1!A2:AX99' #Define a range of rows. "Class Data" is a sheet name.
+schedule_spreadsheet_id = ""
 
 local_schedule = []
 workshop_list = []
@@ -29,10 +27,10 @@ slot_1730 = []
 # define workshop and timeslot object classes
 class Workshop:
     def __init__(self, teacher, title, prop, diff):
-        self.teacher = teacher
-        self.title = title
-        self.prop = prop
-        self.diff = diff
+        self.teacher = teacher #stage name if given, else given name
+        self.title = title #workshop title
+        self.prop = prop #check boxes, not radio buttons
+        self.diff = diff #difficulty
 
 class Slot:
     def __init__(self, location, time, workshop):
@@ -77,52 +75,52 @@ def main():
 
         # Call the Sheets API
         sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,  #CREATE A DICT(?) OF THIS SHEET
-                                    range=SAMPLE_RANGE_NAME).execute()      #RANGE OF ROWS 
+        result = sheet.values().get(spreadsheetId=instructor_spreadsheet_id,  #CREATE A DICT(?) OF THIS SHEET
+                                    range=instructor_spreadsheet_range).execute()      #RANGE OF ROWS 
         values = result.get('values', [])
 
         if not values:
             print('No data found.')
             return
-        print('Name, Major:')
         for row in values:
-            # Print columns A and E, which correspond to indices 0 and 4.
-            print('%s, %s' % (row[0], row[4]))
+            get_workshops(row)
     except HttpError as err:
         print(err)
 
+# a function to rate class difficulty from the radio button response (1 = beginner, 3 = advanced)
 def get_workshop_difficulty(ws):
     if 'SPECIFICALLY' in ws:
         return 1
-    if 'OK' in item:
+    if 'OK' in ws:
         return 2
-    if 'NOT' in item:
+    if 'NOT' in ws:
         return 3
 
+#pluck workshops from instructor app (used above in main)
 def get_workshops(row):
-    if row[3] != ''
-        _teacher = row[3]
+    if row[3] != '':
+        _teacher = row[3] #read in teacher's stage name if present
     else:
-        _teacher = row[2]
+        _teacher = row[2] #if no stage name, use given name
     if row[16] != '': #if "first workshop title" isn't blank,
         _title = row[16] #grab the title
         _prop = row[18] #grab the prop
         _difficulty = get_workshop_difficulty(row[19]) #grab the difficulty
         _workshop = Workshop(_teacher, _title, _prop, _difficulty) #make a new workshop object
         workshop_list.append(_workshop) #stick it in the list!
-    if row[20] != "": #repeat as desired below
+    if row[20] != "": #repeat for 2nd workshop if present
         _title = row[20]
         _prop = row[22]
         _difficulty = get_workshop_difficulty(row[23])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-    if row[24] != "":
+    if row[24] != "": #repeat for 3rd workshop if present
         _title = row[24]
         _prop = row[26]
         _difficulty = get_workshop_difficulty(row[27])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-    if row[28] != "":
+    if row[28] != "": #repeat for 4th workshop if present
         _title = row[28]
         _prop = row[30]
         _difficulty = get_workshop_difficulty(row[31])
@@ -131,8 +129,13 @@ def get_workshops(row):
 
 
 
-def schedule_a_workshop(Timeslot):
-
+# #def schedule_a_class(class):
+    # check a row of the schedule.
+    # look for a poi class.
+    # if there's not one,
+        # find a poi class in workshop_list
+        # check to see if the teacher is in the previous or same slot
+            # if not, slot the class
 
 # # # WHAT TO DO?
 
@@ -173,3 +176,4 @@ def schedule_a_workshop(Timeslot):
 
 if __name__ == '__main__':
     main()
+print(workshop_list)
