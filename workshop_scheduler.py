@@ -18,35 +18,57 @@ schedule_spreadsheet_id = ""
 
 local_schedule = []
 workshop_list = []
-slot_1000 = []
-slot_1130 = []
-slot_1430 = []
-slot_1600 = []
-slot_1730 = []
+fri_1000 = []
+fri_1130 = []
+fri_1430 = []
+fri_1600 = []
+fri_1730 = []
+sat_1000 = []
+sat_1130 = []
+sat_1430 = []
+sat_1600 = []
+sat_1730 = []
+list_of_times = [fri_1000, fri_1130, fri_1430, fri_1600, fri_1730,
+                 sat_1000, sat_1130, sat_1430, sat_1600, sat_1730]
+
 
 # define workshop and timeslot object classes
 class Workshop:
     def __init__(self, teacher, title, prop, diff):
         self.teacher = teacher #stage name if given, else given name
         self.title = title #workshop title
-        self.prop = prop #check boxes, not radio buttons
+        self.prop = str(prop).split(", ") #check boxes, not radio buttons
         self.diff = diff #difficulty
 
-class Slot:
-    def __init__(self, location, time, workshop):
-        self.location = location
-        self.time = time
-        self.workshop = workshop
-    # if self.time = 1000:
-    #     slot_1000.append(self.workshop)
-    # if self.time = 1130:
-    #     slot_1130.append(self.workshop)
-    # if self.time = 1430:
-    #     slot_1430.append(self.workshop)
-    # if self.time = 1600:
-    #     slot_1600.append(self.workshop)
-    # if self.time = 1730:
-    #     slot_1730.append(self.workshop)
+# THIS IS REDUNDANT. use timeslot indices as location info
+# class Slot:
+#     def __init__(self, location, day, time, workshop):
+#         self.location = location
+#         self.day = day
+#         self.time = time
+#         self.workshop = workshop
+#     if self.day = "fri":
+#         if self.time = 1000:
+#             fri_1000.append(self.workshop)
+#         if self.time = 1130:
+#             fri_1130.append(self.workshop)
+#         if self.time = 1430:
+#             fri_1430.append(self.workshop)
+#         if self.time = 1600:
+#             fri_1600.append(self.workshop)
+#         if self.time = 1730:
+#             fri_1730.append(self.workshop)
+#     if self.day = "sat":
+#         if self.time = 1000:
+#             sat_1000.append(self.workshop)
+#         if self.time = 1130:
+#             sat_1130.append(self.workshop)
+#         if self.time = 1430:
+#             sat_1430.append(self.workshop)
+#         if self.time = 1600:
+#             sat_1600.append(self.workshop)
+#         if self.time = 1730:
+#             sat_1730.append(self.workshop)
 
 def main():
     """Shows basic usage of the Sheets API.
@@ -131,21 +153,57 @@ def get_workshops(row):
 
 # #def schedule_a_class(class):
     # check a row of the schedule.
-    # look for a poi class.
+    
+    # look for class in PROP.
     # if there's not one,
-        # find a poi class in workshop_list
+        # find a PROP class in workshop_list
         # check to see if the teacher is in the previous or same slot
+
             # if not, slot the class
 
-# # # WHAT TO DO?
+#big prop jams automatically slotted. also note they never enter workshop_list.
+POIJAM = Workshop('Everyone!', 'POI JAM', 'poi', [1, 2, 3])
+STAFFJAM = Workshop('Everyone!', 'STAFF JAM', ['staff', 'staffs'], [1, 2, 3])
+HOOPJAM = Workshop('Everyone!', 'HOOP JAM', 'hoop', [1, 2, 3])
+JUGGLEJAM = Workshop('Everyone!', 'JUGGLE JAM', ['ball', 'club'], [1, 2, 3])
+fri_1430.append(POIJAM)
+sat_1130.append(STAFFJAM)
+sat_1430.append(JUGGLEJAM)
+sat_1600.append(HOOPJAM)
 
-# first, schedule the prop jams. 
-# that will give inspo as to how to auto-sched the rest!
+def check_ws_match(a, b):
+    if len(a.prop) > 2 or len(b.prop) > 2:
+        return False
+    for thing in a.prop: #check all the props in a.prop
+        for thing2 in b.prop: #against all the props in b.prop
+            if thing2 == thing: #if any of them are the same,
+                if abs(a.diff - b.diff) < 2: #check difficulty (4 lines)
+                    return True
+                if abs(a.diff - b.diff) > 1:
+                    return False              #they match if diffs are similar
+    if a.teacher == b.teacher:
+        return True
+    else:
+        return False      
 
-# # READ IN THE WORKSHOPS (functions exist for this now)
 
-# # SCHEDULE THE CLASSES
-# check row for an easy or intermediate class in Prop X
+# WHAT TO DO?
+# # iterate over list of workshops
+    # check earliest timeslot for a class that matches
+        # look at each prop for all listed classes in the timeslot.
+            # exempt any that use more than one prop.
+                # exempt any that have an abs difficulty difference < 2
+                    #
+for ws in workshop_list:
+    i = -1
+    for time in list_of_times:
+        if len(time) > 9:
+            pass
+        if check_ws_match(ws, time[i]) == True:
+            pass
+        if check_ws_match(ws, time[i]) == False:
+            time.append(ws)
+
 # if one is there, pass. if not, schedule one
     # is_it_there = False
         # while is_it_there = False:
@@ -160,20 +218,32 @@ def get_workshops(row):
         #         pass
     # # if not there, check if that teacher is in the same or an adjacent slot* (this might already exist)
     # # make an exception for lunch / day breaks*
-    # repeat for hoop and staff
+    # repeat for hoop and staff and staffs
     # check row for a difficult poi class
     # if not there, schedule it
-# repeat for hoop and staff
+# repeat for hoop and staff and staffs
 
 # now let's infill!
 # check to see if a row is complete
+    #what's "complete?"
+        #something in every row.   
 # if it's not, find an unscheduled workshop
 # check to see if the teacher can be scheduled in that slot*
 # check to see if there's already a class in More Obscure Prop
 # if not, slap it in!
 # repeat final loop until all classes are scheduled.
 
+# what will you do manually?
+# make sure big classes are in big space
+# resolve performer schedule conflicts with gala tech
 
 if __name__ == '__main__':
     main()
 print(workshop_list)
+for workshop in workshop_list:
+    for workshop2 in workshop_list:
+        if check_ws_match(workshop, workshop2) == True:
+            print("Match found: " + workshop.title + " with " + workshop.teacher + 
+                  " and " + workshop2.title + " with " + workshop2.teacher)
+        if check_ws_match(workshop, workshop2) == False:
+            print("No match")
