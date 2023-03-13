@@ -36,7 +36,7 @@ last_teacher_list = []
 
 # define workshop and timeslot object classes
 class Workshop:
-    def __init__(self, teacher, title, prop, diff:
+    def __init__(self, teacher, title, prop, diff):
         self.teacher = teacher #stage name if given, else given name
         self.title = title #workshop title
         self.prop = str(prop).split(", ") #check boxes, not radio buttons
@@ -124,10 +124,10 @@ def get_workshops(row):
         workshop_list.append(_workshop)
 
 #big prop jams automatically slotted. note: these never enter workshop_list.
-POIJAM = Workshop('Everyone!', 'POI JAM', 'poi', [1, 2, 3])
-STAFFJAM = Workshop('Everyone!', 'STAFF JAM', ['staff', 'staffs'], [1, 2, 3])
-HOOPJAM = Workshop('Everyone!', 'HOOP JAM', 'hoop', [1, 2, 3])
-JUGGLEJAM = Workshop('Everyone!', 'JUGGLE JAM', ['ball', 'club'], [1, 2, 3])
+POIJAM = Workshop('Everyone!', 'POI JAM', 'poi', 9)
+STAFFJAM = Workshop('Everyone!', 'STAFF JAM', ['staff', 'staffs'], 9)
+HOOPJAM = Workshop('Everyone!', 'HOOP JAM', 'hoop', 9)
+JUGGLEJAM = Workshop('Everyone!', 'JUGGLE JAM', ['ball', 'club'], 9)
 fri_1430.append(POIJAM)
 sat_1130.append(STAFFJAM)
 sat_1430.append(JUGGLEJAM)
@@ -137,6 +137,8 @@ sat_1600.append(HOOPJAM)
 def check_ws_match(a, b):
     if len(a.prop) > 2 or len(b.prop) > 2:
         return False
+    if a.diff == 9 or b.diff == 9:
+        return True
     for thing in a.prop: #check all the props in a.prop
         for thing2 in b.prop: #against all the props in b.prop
             if thing2 == thing: #if any of them are the same,
@@ -158,6 +160,8 @@ def check_ws_match(a, b):
                 # exempt any that have an abs difficulty difference < 2
 
 #build out a teacher list for the current slot for reference NEXT slot
+last_teacher_list = []
+current_teacher_list = []
 def make_last_teacher_list(a):
     last_teacher_list = []
     for slot in a:
@@ -176,7 +180,7 @@ if __name__ == '__main__':
 for ws in workshop_list: #for every workshop in the list,
     for time in list_of_times: #search a time (e.g. Friday 10:00)
         make_current_teacher_list(time) #initialize timeslot's roster
-        if time NOT in list_of_exempt_times: #skip if teacher schedule conflict
+        if time not in list_of_exempt_times: #skip if teacher schedule conflict
             if ws.teacher in (last_teacher_list + current_teacher_list):
                 make_last_teacher_list(time)
                 pass
@@ -185,11 +189,19 @@ for ws in workshop_list: #for every workshop in the list,
             make_last_teacher_list(time)
             pass
         for slot in time:   #skip if there's a match in prop+diff
-            if check_ws_match(slot.workshop, ws) == True:
-                pass
+            if hasattr(slot, 'workshop'):
+                if check_ws_match(slot.workshop, ws) == True:
+                    pass
         time.append(ws)
+        make_last_teacher_list(time)
+        break
 
 ## TODO
 
 #error check everything lol
 #get the times as an output
+
+for time in list_of_times:
+    print("Time slot")
+    for thing in time:
+        print("Workshop: " + thing.title + " with " + thing.teacher)
