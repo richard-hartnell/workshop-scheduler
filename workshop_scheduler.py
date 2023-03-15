@@ -30,7 +30,7 @@ sat_1600 = []
 sat_1730 = []
 list_of_times = [fri_1000, fri_1130, fri_1430, fri_1600, fri_1730,
                  sat_1000, sat_1130, sat_1430, sat_1600, sat_1730]
-list_of_exempt_times = [fri_1430, sat_1000, sat_1430]
+list_of_exempt_times = [fri_1000, fri_1430, sat_1000, sat_1430]
 list_of_tech_times = [fri_1600, fri_1730] #reserved for gala performers
 last_teacher_list = []
 
@@ -39,7 +39,7 @@ class Workshop:
     def __init__(self, teacher, title, prop, diff):
         self.teacher = teacher #stage name if given, else given name
         self.title = title #workshop title
-        self.prop = str(prop).split(", ") #check boxes, not radio buttons
+        self.prop = list(str(prop).split(", ")) #check boxes, not radio buttons
         self.diff = diff #difficulty
 
 TBA = Workshop("TBA", "TBA", "TBA", 0)
@@ -136,9 +136,11 @@ sat_1600.append(HOOPJAM)
 #check to see if workshops are incompatible
 def check_ws_match(a, b):
     if len(a.prop) > 2 or len(b.prop) > 2:
+        print ("No match bc multi-prop")
         return False
-    if a.diff == 9 or b.diff == 9:
-        return True
+    # if a.diff == 9 or b.diff == 9:
+    #     print ("There is a general jam here")
+    #     return True
     for thing in a.prop: #check all the props in a.prop
         for thing2 in b.prop: #against all the props in b.prop
             if thing2 == thing: #if any of them are the same,
@@ -146,8 +148,6 @@ def check_ws_match(a, b):
                     return True
                 if abs(a.diff - b.diff) > 1:
                     return False              #they match if diffs are similar
-    if a.teacher == b.teacher:
-        return True
     else:
         return False      
 
@@ -162,16 +162,28 @@ def check_ws_match(a, b):
 #build out a teacher list for the current slot for reference NEXT slot
 last_teacher_list = []
 current_teacher_list = []
+
 def make_last_teacher_list(a):
     last_teacher_list = []
     for slot in a:
-        if slot.teacher != "TBA":
-            last_teacher_list.append(slot.teacher)
+        last_teacher_list.append(slot.teacher)
 
 def make_current_teacher_list(b):
     current_teacher_list = []
     for slot in b:
         current_teacher_list.append(slot.teacher)
+
+def check_last_slot(c):
+    for slot in c:
+        if slot.teacher in last_teacher_list:
+            return True
+    return False
+
+# def check_last_slot(teacher, teacherlist):
+#     if teacher in teacherlist:
+#         return True
+#     return False
+
 
 if __name__ == '__main__':
     main()
@@ -180,21 +192,25 @@ if __name__ == '__main__':
 for ws in workshop_list: #for every workshop in the list,
     for time in list_of_times: #search a time (e.g. Friday 10:00)
         make_current_teacher_list(time) #initialize timeslot's roster
-        if time not in list_of_exempt_times: #skip if teacher schedule conflict
-            if ws.teacher in (last_teacher_list + current_teacher_list):
-                make_last_teacher_list(time)
-                pass
-        make_last_teacher_list(time)
-        if len(time) > 8:   #skip if timeslot is full
-            make_last_teacher_list(time)
-            pass
-        for slot in time:   #skip if there's a match in prop+diff
-            if hasattr(slot, 'workshop'):
-                if check_ws_match(slot.workshop, ws) == True:
+        print(current_teacher_list)
+        if ws.teacher not in current_teacher_list:
+            print("Ws.teacher: ", ws.teacher)
+            # if time in list_of_exempt_times: #skip if teacher schedule conflict
+            #     exempt = True
+            if ws.teacher not in last_teacher_list:
+                if len(time) < 8:
+                    for slot in time:
+                        if check_ws_match(slot, ws) == False:
+                            time.append(ws)
+                            current_teacher_list.append(ws.teacher)
+                            # make_last_teacher_list(time)
+                            break
+                        pass
                     pass
-        time.append(ws)
-        make_last_teacher_list(time)
-        break
+                pass
+            pass
+        else:
+            break
 
 ## TODO
 
@@ -205,3 +221,7 @@ for time in list_of_times:
     print("Time slot")
     for thing in time:
         print("Workshop: " + thing.title + " with " + thing.teacher)
+
+print(len(fri_1000))
+for ws in workshop_list:
+    print(ws.title)
