@@ -30,9 +30,11 @@ sat_1600 = []
 sat_1730 = []
 list_of_times = [fri_1000, fri_1130, fri_1430, fri_1600, fri_1730,
                  sat_1000, sat_1130, sat_1430, sat_1600, sat_1730]
+list_of_timenames = ["fri_1000", "fri_1130", "fri_1430", "fri_1600", "fri_1730",
+                 "sat_1000", "sat_1130", "sat_1430", "sat_1600", "sat_1730"]
+
 list_of_exempt_times = [fri_1000, fri_1430, sat_1000, sat_1430]
 list_of_tech_times = [fri_1600, fri_1730] #reserved for gala performers
-last_teacher_list = []
 
 # define workshop and timeslot object classes
 class Workshop:
@@ -44,7 +46,7 @@ class Workshop:
 
 TBA = Workshop("TBA", "TBA", "TBA", 0)
 
-def main():
+def main(): #fetches all the remote data and builds workshop_list."
     """Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
     """
@@ -82,8 +84,6 @@ def main():
             get_workshops(row)
     except HttpError as err:
         print(err)
-
-# a function to rate class difficulty from the radio button response (1 = beginner, 3 = advanced)
 def get_workshop_difficulty(ws):
     if 'SPECIFICALLY' in ws:
         return 1
@@ -91,8 +91,6 @@ def get_workshop_difficulty(ws):
         return 2
     if 'NOT' in ws:
         return 3
-
-#pluck workshops from instructor app (used above in main)
 def get_workshops(row):
     if row[3] != '':
         _teacher = row[3] #read in teacher's stage name if present
@@ -122,6 +120,16 @@ def get_workshops(row):
         _difficulty = get_workshop_difficulty(row[31])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
+def print_the_schedule():
+    print("THE SCHEDULE:")
+    timecounter = 0
+    for time in list_of_times:
+        timecounter += 1
+        print("Time: " + str(list_of_timenames[timecounter - 1]))
+        for thing in time:
+            print("Workshop: " + thing.title + " with " + thing.teacher)
+
+    print(sat_1130[0].title)
 
 #big prop jams automatically slotted. note: these never enter workshop_list.
 POIJAM = Workshop('Everyone!', 'POI JAM', 'poi', 9)
@@ -135,12 +143,9 @@ sat_1600.append(HOOPJAM)
 
 #check to see if workshops are incompatible
 def check_ws_match(a, b):
-    if len(a.prop) > 2 or len(b.prop) > 2:
-        print ("No match bc multi-prop")
-        return False
-    # if a.diff == 9 or b.diff == 9:
-    #     print ("There is a general jam here")
-    #     return True
+    if a.diff == 9 or b.diff == 9:
+        print ("There is a general jam here")
+        return True
     for thing in a.prop: #check all the props in a.prop
         for thing2 in b.prop: #against all the props in b.prop
             if thing2 == thing: #if any of them are the same,
@@ -151,30 +156,34 @@ def check_ws_match(a, b):
     else:
         return False      
 
-
-# WHAT TO DO?
-# # iterate over list of workshops
-    # check earliest timeslot for a class that matches
-        # look at each prop for all listed classes in the timeslot.
-            # exempt any that use more than one prop.
-                # exempt any that have an abs difficulty difference < 2
-
 #build out a teacher list for the current slot for reference NEXT slot
 last_teacher_list = []
 current_teacher_list = []
+current_prop_list = []
 
 def make_last_teacher_list(a):
     last_teacher_list = []
     for slot in a:
         last_teacher_list.append(slot.teacher)
 
-def make_current_teacher_list(b):
+def make_current_teacher_list(a):
     current_teacher_list = []
-    for slot in b:
+    for slot in a:
         current_teacher_list.append(slot.teacher)
 
-def check_last_slot(c):
-    for slot in c:
+def make_current_prop_list(a):
+    current_prop_list = []
+    for slot in a:
+        current_prop_list.append(slot.prop)
+
+def compare_diffs(a, b):
+    if abs(a.diff - b.diff) > 1:
+        return("High difference, ok")
+    else:
+        return("Low difference, don't")
+
+def check_last_slot(a):
+    for slot in a:
         if slot.teacher in last_teacher_list:
             return True
     return False
@@ -190,38 +199,46 @@ if __name__ == '__main__':
 
 #go through workshop_list and schedule everything!
 for ws in workshop_list: #for every workshop in the list,
+    print("Workshop title: ", ws.title)
+    print("Workshop teacher: ", ws.teacher)
     for time in list_of_times: #search a time (e.g. Friday 10:00)
+        print("Searching ", time, "...")
         make_current_teacher_list(time) #initialize timeslot's roster
-        print(current_teacher_list)
-        if ws.teacher not in current_teacher_list:
-            print("Ws.teacher: ", ws.teacher)
+        if not (ws.teacher in current_teacher_list):
+            print("ws.teacher NOT in current_teacher_list")
             # if time in list_of_exempt_times: #skip if teacher schedule conflict
             #     exempt = True
             if ws.teacher not in last_teacher_list:
-                if len(time) < 8:
+                print("ws.teacher NOT in last_teacher_list")
+                if len(time) < 1:
+                    time.append(ws)
+                    print("Adding a workshop...")
+                    current_teacher_list.append(ws.teacher)
+                    make_last_teacher_list(time)
+                    break
+                    # for slot in time:
+                        # if time == []:
+                        #     print("slot:", slot)
+                        #     break
+                        # else:
+                        #     print("Check ws match NOT")
+                        #     time.append(ws)
+                        #     print("Adding a workshop...")
+                        #     current_teacher_list.append(ws.teacher)
+                        #     print("Amending current_teacher_list...")
+                        #     make_last_teacher_list(time)
+                        #     print("Making last teacher list...")
+                        #     break
+                if len(time) > 7:
+                    break
+                else:
                     for slot in time:
-                        if check_ws_match(slot, ws) == False:
-                            time.append(ws)
-                            current_teacher_list.append(ws.teacher)
-                            # make_last_teacher_list(time)
-                            break
-                        pass
-                    pass
-                pass
-            pass
-        else:
+                        # check prop
+                        # check diff if prop
+                        #schedule or break
+                        break
+                    break
+
             break
-
-## TODO
-
-#error check everything lol
-#get the times as an output
-
-for time in list_of_times:
-    print("Time slot")
-    for thing in time:
-        print("Workshop: " + thing.title + " with " + thing.teacher)
-
-print(len(fri_1000))
-for ws in workshop_list:
-    print(ws.title)
+        make_last_teacher_list(time)
+        break
