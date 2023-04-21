@@ -144,17 +144,12 @@ sat_1600.append(HOOPJAM)
 #check to see if workshops are incompatible
 def check_ws_match(a, b):
     if a.diff == 9 or b.diff == 9:
-        print ("There is a general jam here")
-        return True
-    for thing in a.prop: #check all the props in a.prop
-        for thing2 in b.prop: #against all the props in b.prop
-            if thing2 == thing: #if any of them are the same,
-                if abs(a.diff - b.diff) < 2: #check difficulty (4 lines)
-                    return True
-                if abs(a.diff - b.diff) > 1:
-                    return False              #they match if diffs are similar
+        print ("There is a general jam in the same prop here")
+        return "Incompatible"
+    if abs(a.diff - b.diff) > 1:
+        return "Compatible"
     else:
-        return False      
+        return "Incompatible"
 
 #build out a teacher list for the current slot for reference NEXT slot
 last_teacher_list = []
@@ -172,9 +167,11 @@ def make_current_teacher_list(a):
         current_teacher_list.append(slot.teacher)
 
 def make_current_prop_list(a):
+    i = -1
     current_prop_list = []
     for slot in a:
         current_prop_list.append(slot.prop)
+        print(current_prop_list)
 
 def compare_diffs(a, b):
     if abs(a.diff - b.diff) > 1:
@@ -197,12 +194,61 @@ def check_last_slot(a):
 if __name__ == '__main__':
     main()
 
+"""
+is the timeslot full?
+
+is there a similar prop?
+in a similar difficulty?
+
+is it lunch or morning?
+is the teacher teaching now or before?
+is it show tech?
+
+"""
+
+
 #go through workshop_list and schedule everything!
 for ws in workshop_list: #for every workshop in the list,
+    _scheduled = False
+    while _scheduled == False:
+        for time in list_of_times:
+            make_current_teacher_list(time)
+            print(current_teacher_list)
+            if len(time) > 9:
+                make_last_teacher_list(time)
+                print("Length of timeslot > 9. break")
+                break
+            if ws.teacher in current_teacher_list:
+                make_last_teacher_list(time)
+                print("Teacher in current timeslot. break")
+                break
+            if ws.teacher in last_teacher_list:
+                make_last_teacher_list(time)
+                print("Teacher in last timeslot. break")
+                break
+            make_current_prop_list(time)
+            print("Current prop list: ", current_prop_list)
+            print("Current workshop prop: ", ws.prop)
+            if ws.prop in current_prop_list:
+                print("Prop check required")
+            else:
+                print("Prop check not required")
+                time.append(ws)     #schedule the workshop in the timeslot!
+                make_last_teacher_list(time)
+                _scheduled = True
+                break
+
+                # else:
+                #     print("Prop and skill level conflict. break")
+                #     break
+
+
+""" FIRST DRAFT
     print("Workshop title: ", ws.title)
     print("Workshop teacher: ", ws.teacher)
+    for (x in range(len(list_of_times))):
     for time in list_of_times: #search a time (e.g. Friday 10:00)
-        print("Searching ", time, "...")
+        print("Searching ", list_of_times.index(time), "...")
         make_current_teacher_list(time) #initialize timeslot's roster
         if not (ws.teacher in current_teacher_list):
             print("ws.teacher NOT in current_teacher_list")
@@ -242,3 +288,5 @@ for ws in workshop_list: #for every workshop in the list,
             break
         make_last_teacher_list(time)
         break
+        
+        """ 
