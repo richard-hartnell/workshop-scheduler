@@ -151,21 +151,17 @@ def check_ws_match(a, b):
     else:
         return "Incompatible"
 
-#build out a teacher list for the current slot for reference NEXT slot
-last_teacher_list = []
+#these might be redundant now
 current_teacher_list = []
 current_prop_list = []
-
-def make_last_teacher_list(a):
-    last_teacher_list = []
-    for slot in a:
-        last_teacher_list.append(slot.teacher)
-        print("Added " + slot.teacher + " to current teacher list")
 
 def getCurrentTeacherList(i):
     current_teacher_list = []
     for workshop in list_of_times[i]:
         current_teacher_list.append(workshop.teacher)
+        if i in [1, 3, 4]:
+            for workshop in list_of_times[i-1]:
+                current_teacher_list.append(workshop.teacher)
     return current_teacher_list
 
 def getCurrentPropList(i):
@@ -173,6 +169,12 @@ def getCurrentPropList(i):
     for workshop in list_of_times[i]:
         current_prop_list.append(workshop.prop)
     return current_prop_list
+
+def checkPropConflict(i, q):
+    if (str(q.prop)).casefold() in str(getCurrentPropList(i)).casefold():
+        return True
+    else:
+        return False
 
 def make_current_teacher_list(a):
     print("Making current teacher list for timeslot ", (i + 1))
@@ -194,18 +196,6 @@ def compare_diffs(a, b):
     else:
         return("Low difference, don't")
 
-def check_last_slot(a):
-    for slot in a:
-        if slot.teacher in last_teacher_list:
-            return True
-    return False
-
-# def check_last_slot(teacher, teacherlist):
-#     if teacher in teacherlist:
-#         return True
-#     return False
-
-
 if __name__ == '__main__':
     main()
 
@@ -222,105 +212,22 @@ is it show tech?
 """
 
 
-
 #go through workshop_list and schedule everything!
-print(str([1, 2, 3, 4, 5]))
-if "1" in str([1,2,3,4,5]):
-    print("Test passes")
+
 for ws in workshop_list: #for every workshop in the list,
-    print("SCHEDULING: " + ws.title)
+    _scheduled = False
     i = 0
-    print("Timeslot: ", str(i + 1))
-    print("Workshop teacher:", ws.teacher)
-    print("Current teacher list:", getCurrentTeacherList(i))
-    if ws.teacher in getCurrentTeacherList(i):
-        print("Teacher conflict")
-        i += 1
-    else:
-        print("No teacher conflict")
-        list_of_times[i].append(ws)
-        
-
-    # _scheduled = False
-    # while _scheduled == False:
-    #     _i = 0
-    #     for time in list_of_times:
-    #         print("Trying time slot")
-    #         make_current_teacher_list(time)
-    #         print(current_teacher_list)
-    #         if len(time) > 9:
-    #             make_last_teacher_list(time)
-    #             print("Length of timeslot > 9. break")
-    #             break
-    #         if ws.teacher in current_teacher_list:
-    #             make_last_teacher_list(time)
-    #             print("Teacher in current timeslot. break")
-    #             break
-    #         if ws.teacher in last_teacher_list:
-    #             make_last_teacher_list(time)
-    #             print("Teacher in last timeslot. break")
-    #             break
-    #         make_current_prop_list(time)
-    #         print("Current prop list: ", current_prop_list)
-    #         print("Current workshop prop: ", ws.prop)
-    #         if ws.prop in current_prop_list:
-    #             print("Prop check required")
-    #         else:
-    #             print("Prop check not required")
-    #             time.append(ws)     #schedule the workshop in the timeslot!
-    #             make_last_teacher_list(time)
-    #             _scheduled = True
-    #             break
-
-                # else:
-                #     print("Prop and skill level conflict. break")
-                #     break
-
-
-""" FIRST DRAFT
-    print("Workshop title: ", ws.title)
-    print("Workshop teacher: ", ws.teacher)
-    for (x in range(len(list_of_times))):
-    for time in list_of_times: #search a time (e.g. Friday 10:00)
-        print("Searching ", list_of_times.index(time), "...")
-        make_current_teacher_list(time) #initialize timeslot's roster
-        if not (ws.teacher in current_teacher_list):
-            print("ws.teacher NOT in current_teacher_list")
-            # if time in list_of_exempt_times: #skip if teacher schedule conflict
-            #     exempt = True
-            if ws.teacher not in last_teacher_list:
-                print("ws.teacher NOT in last_teacher_list")
-                if len(time) < 1:
-                    time.append(ws)
-                    print("Adding a workshop...")
-                    current_teacher_list.append(ws.teacher)
-                    make_last_teacher_list(time)
-                    break
-                    # for slot in time:
-                        # if time == []:
-                        #     print("slot:", slot)
-                        #     break
-                        # else:
-                        #     print("Check ws match NOT")
-                        #     time.append(ws)
-                        #     print("Adding a workshop...")
-                        #     current_teacher_list.append(ws.teacher)
-                        #     print("Amending current_teacher_list...")
-                        #     make_last_teacher_list(time)
-                        #     print("Making last teacher list...")
-                        #     break
-                if len(time) > 7:
-                    break
-                else:
-                    for slot in time:
-                        # check prop
-                        # check diff if prop
-                        #schedule or break
-                        break
-                    break
-
-            break
-        make_last_teacher_list(time)
-        break
-        
-        """ 
+    while _scheduled == False:
+        print("SCHEDULING: " + ws.title + " with " + ws.teacher)
+        print("Timeslot: ", str(i + 1))
+        if len(list_of_times[i]) > 8:
+            print("Timeslot", (i+1), "is full")
+            i+= 1
+        elif ws.teacher in getCurrentTeacherList(i):
+            print("Teacher conflict")
+            i += 1
+        else:
+            print("No teacher conflict")
+            print(checkPropConflict(i, ws))
+            list_of_times[i].append(ws)
+            _scheduled = True
