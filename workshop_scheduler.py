@@ -160,11 +160,26 @@ def make_last_teacher_list(a):
     last_teacher_list = []
     for slot in a:
         last_teacher_list.append(slot.teacher)
+        print("Added " + slot.teacher + " to current teacher list")
+
+def getCurrentTeacherList(i):
+    current_teacher_list = []
+    for workshop in list_of_times[i]:
+        current_teacher_list.append(workshop.teacher)
+    return current_teacher_list
+
+def getCurrentPropList(i):
+    current_prop_list = []
+    for workshop in list_of_times[i]:
+        current_prop_list.append(workshop.prop)
+    return current_prop_list
 
 def make_current_teacher_list(a):
+    print("Making current teacher list for timeslot ", (i + 1))
     current_teacher_list = []
     for slot in a:
         current_teacher_list.append(slot.teacher)
+    print("Current teacher list: ", current_teacher_list)
 
 def make_current_prop_list(a):
     i = -1
@@ -207,36 +222,55 @@ is it show tech?
 """
 
 
+
 #go through workshop_list and schedule everything!
+print(str([1, 2, 3, 4, 5]))
+if "1" in str([1,2,3,4,5]):
+    print("Test passes")
 for ws in workshop_list: #for every workshop in the list,
-    _scheduled = False
-    while _scheduled == False:
-        for time in list_of_times:
-            make_current_teacher_list(time)
-            print(current_teacher_list)
-            if len(time) > 9:
-                make_last_teacher_list(time)
-                print("Length of timeslot > 9. break")
-                break
-            if ws.teacher in current_teacher_list:
-                make_last_teacher_list(time)
-                print("Teacher in current timeslot. break")
-                break
-            if ws.teacher in last_teacher_list:
-                make_last_teacher_list(time)
-                print("Teacher in last timeslot. break")
-                break
-            make_current_prop_list(time)
-            print("Current prop list: ", current_prop_list)
-            print("Current workshop prop: ", ws.prop)
-            if ws.prop in current_prop_list:
-                print("Prop check required")
-            else:
-                print("Prop check not required")
-                time.append(ws)     #schedule the workshop in the timeslot!
-                make_last_teacher_list(time)
-                _scheduled = True
-                break
+    print("SCHEDULING: " + ws.title)
+    i = 0
+    print("Timeslot: ", str(i + 1))
+    print("Workshop teacher:", ws.teacher)
+    print("Current teacher list:", getCurrentTeacherList(i))
+    if ws.teacher in getCurrentTeacherList(i):
+        print("Teacher conflict")
+        i += 1
+    else:
+        print("No teacher conflict")
+        list_of_times[i].append(ws)
+        
+
+    # _scheduled = False
+    # while _scheduled == False:
+    #     _i = 0
+    #     for time in list_of_times:
+    #         print("Trying time slot")
+    #         make_current_teacher_list(time)
+    #         print(current_teacher_list)
+    #         if len(time) > 9:
+    #             make_last_teacher_list(time)
+    #             print("Length of timeslot > 9. break")
+    #             break
+    #         if ws.teacher in current_teacher_list:
+    #             make_last_teacher_list(time)
+    #             print("Teacher in current timeslot. break")
+    #             break
+    #         if ws.teacher in last_teacher_list:
+    #             make_last_teacher_list(time)
+    #             print("Teacher in last timeslot. break")
+    #             break
+    #         make_current_prop_list(time)
+    #         print("Current prop list: ", current_prop_list)
+    #         print("Current workshop prop: ", ws.prop)
+    #         if ws.prop in current_prop_list:
+    #             print("Prop check required")
+    #         else:
+    #             print("Prop check not required")
+    #             time.append(ws)     #schedule the workshop in the timeslot!
+    #             make_last_teacher_list(time)
+    #             _scheduled = True
+    #             break
 
                 # else:
                 #     print("Prop and skill level conflict. break")
