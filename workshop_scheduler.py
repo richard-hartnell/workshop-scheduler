@@ -165,39 +165,48 @@ def getCurrentTeacherList(i):
     return current_teacher_list
 
 def getCurrentPropList(i):
-    current_prop_list = []
+    _temp_prop_list = []
     for workshop in list_of_times[i]:
-        current_prop_list.append(workshop.prop)
-    return current_prop_list
+        _temp_prop_list.append(workshop.prop)
+    return _temp_prop_list
 
-def checkPropConflict(i, q):
-    if (str(q.prop)).casefold() in str(getCurrentPropList(i)).casefold():
-        return True
-    else:
-        return False
-
-def make_current_teacher_list(a):
-    print("Making current teacher list for timeslot ", (i + 1))
-    current_teacher_list = []
-    for slot in a:
-        current_teacher_list.append(slot.teacher)
-    print("Current teacher list: ", current_teacher_list)
-
-def make_current_prop_list(a):
-    i = -1
-    current_prop_list = []
-    for slot in a:
-        current_prop_list.append(slot.prop)
-        print(current_prop_list)
-
-def compare_diffs(a, b):
-    if abs(a.diff - b.diff) > 1:
-        return("High difference, ok")
-    else:
-        return("Low difference, don't")
+def checkPropConflict(i, ws, timeslot):
+    _current_prop_list = getCurrentPropList(i)
+    for individual_prop in ws.prop:
+        if individual_prop.casefold() in str(_current_prop_list).casefold():
+            print("True - prop of interest:", str(ws.prop), "WS rating:", str(ws.diff), "| getCurrentPropList(i) =", str(_current_prop_list))
+            print("Checking individual props...")
+            for scheduled_class in timeslot:
+                if individual_prop.casefold() in str(scheduled_class.prop).casefold():
+                    print("Found a conflict: ", individual_prop, "vs", scheduled_class.prop, ". Compare difficulty.")
+            return True
+        else:
+            return False
 
 if __name__ == '__main__':
     main()
+
+for ws in workshop_list: #for every workshop in the list,
+    _scheduled = False
+    i = 0
+    while _scheduled == False:
+        timeslot = list_of_times[i]
+        print("SCHEDULING: " + ws.title + " with " + ws.teacher)
+        print("Timeslot: ", str(i + 1))
+        if len(timeslot) > 8:
+            print("Timeslot", (i+1), "is full")
+            i+= 1
+        elif ws.teacher in getCurrentTeacherList(i): #check workshop teacher against timeslot (and last timeslot)
+            print("Teacher conflict")
+            i += 1
+        elif checkPropConflict(i, ws, timeslot) == True:
+            print("Potential prop conflict")
+            i += 1
+        else: 
+            timeslot.append(ws)
+            _scheduled = True
+
+
 
 """
 is the timeslot full?
@@ -210,24 +219,3 @@ is the teacher teaching now or before?
 is it show tech?
 
 """
-
-
-#go through workshop_list and schedule everything!
-
-for ws in workshop_list: #for every workshop in the list,
-    _scheduled = False
-    i = 0
-    while _scheduled == False:
-        print("SCHEDULING: " + ws.title + " with " + ws.teacher)
-        print("Timeslot: ", str(i + 1))
-        if len(list_of_times[i]) > 8:
-            print("Timeslot", (i+1), "is full")
-            i+= 1
-        elif ws.teacher in getCurrentTeacherList(i):
-            print("Teacher conflict")
-            i += 1
-        else:
-            print("No teacher conflict")
-            print(checkPropConflict(i, ws))
-            list_of_times[i].append(ws)
-            _scheduled = True
