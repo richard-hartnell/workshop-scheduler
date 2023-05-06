@@ -142,14 +142,6 @@ sat_1430.append(JUGGLEJAM)
 sat_1600.append(HOOPJAM)
 
 #check to see if workshops are incompatible
-def check_ws_match(a, b):
-    if a.diff == 9 or b.diff == 9:
-        print ("There is a general jam in the same prop here")
-        return "Incompatible"
-    if abs(a.diff - b.diff) > 1:
-        return "Compatible"
-    else:
-        return "Incompatible"
 
 #these might be redundant now
 current_teacher_list = []
@@ -170,6 +162,15 @@ def getCurrentPropList(i):
         _temp_prop_list.append(workshop.prop)
     return _temp_prop_list
 
+def checkDiffs(a, b): #this is where you are working.
+    if a.diff == 9 or b.diff == 9:
+        print ("There is a prop jam in the same prop here")
+        return "Conflict"
+    if abs(a.diff - b.diff) > 1:
+        return "Do it"
+    else:
+        return "Don't do it"
+
 def checkPropConflict(i, ws, timeslot):
     _current_prop_list = getCurrentPropList(i)
     for individual_prop in ws.prop:
@@ -179,6 +180,15 @@ def checkPropConflict(i, ws, timeslot):
             for scheduled_class in timeslot:
                 if individual_prop.casefold() in str(scheduled_class.prop).casefold():
                     print("Found a conflict: ", individual_prop, "vs", scheduled_class.prop, ". Compare difficulty.")
+                    if checkDiffs(ws, scheduled_class) == "Compatible":
+                        print("Resolve conflict")
+                    elif checkDiffs(ws, scheduled_class) == "Incompatible":
+                        print("No conflict")
+                        return False
+                    else:
+                        print("Error in checkDiffs")
+                        # UNTESTED. -you, cinco de mayo
+
             return True
         else:
             return False
@@ -200,7 +210,7 @@ for ws in workshop_list: #for every workshop in the list,
             print("Teacher conflict")
             i += 1
         elif checkPropConflict(i, ws, timeslot) == True:
-            print("Potential prop conflict")
+            print("Potential prop conflict") #this is fine; update checkPropConflict() with difficulty checker!
             i += 1
         else: 
             timeslot.append(ws)
