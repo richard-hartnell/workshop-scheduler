@@ -97,25 +97,25 @@ def get_workshops(row):
         _teacher = row[3] #read in teacher's stage name if present
     else:
         _teacher = row[2] #if no stage name, use given name
-    if row[16] != '': #if "first workshop title" isn't blank,
+    if row[17] != '': #if "first workshop title" isn't blank,
         _title = row[17] #grab the title
         _prop = row[19] #grab the prop
-        _difficulty = get_workshop_difficulty(row[19]) #grab the difficulty
+        _difficulty = get_workshop_difficulty(row[20]) #grab the difficulty
         _workshop = Workshop(_teacher, _title, _prop, _difficulty) #make a new workshop object
         workshop_list.append(_workshop) #stick it in the list!
-    if row[20] != "": #repeat for 2nd workshop if present
+    if row[21] != "": #repeat for 2nd workshop if present
         _title = row[21]
         _prop = row[23]
-        _difficulty = get_workshop_difficulty(row[23])
+        _difficulty = get_workshop_difficulty(row[24])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-    if row[24] != "": #repeat for 3rd workshop if present
+    if row[25] != "": #repeat for 3rd workshop if present
         _title = row[25]
         _prop = row[27]
         _difficulty = get_workshop_difficulty(row[28])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-    if row[28] != "": #repeat for 4th workshop if present
+    if row[29] != "": #repeat for 4th workshop if present
         _title = row[29]
         _prop = row[31]
         _difficulty = get_workshop_difficulty(row[32])
@@ -146,9 +146,14 @@ def getCurrentTeacherList(i):
     current_teacher_list = []
     for workshop in list_of_times[i]:
         current_teacher_list.append(workshop.teacher)
-        if i in [1, 3, 4]:
-            for workshop in list_of_times[i-1]:
-                current_teacher_list.append(workshop.teacher)
+    if i in [1, 3, 4, 6, 8, 9]: #check behind if desired
+        print("It's a timeslot we care about.")
+        for workshop in list_of_times[i-1]:
+            current_teacher_list.append(workshop.teacher)
+    if i in [0, 2, 3, 5, 7, 8]: #check ahead if desired
+        for workshop in list_of_times[i+1]:
+            current_teacher_list.append(workshop.teacher)
+    print("current teacher list:", current_teacher_list)
     return current_teacher_list
 
 def getCurrentPropList(i):
@@ -161,9 +166,13 @@ def checkDiffConflict(a, b): #this is where you are working.
     if a.diff == 9 or b.diff == 9:
         # print ("There is a prop jam in the same prop here")
         return True
-    if abs(a.diff - b.diff) <= 1:
-        return True
-    else:
+    try:
+        if abs(a.diff - b.diff) <= 1:
+            # print("Difficulty conflict")
+            return True
+        else:
+            return False
+    except:
         return False
 
 def checkPropConflict(i, ws, timeslot):
@@ -176,10 +185,10 @@ def checkPropConflict(i, ws, timeslot):
                 if individual_prop.casefold() in str(scheduled_class.prop).casefold():
                     # print("Found a conflict: ", individual_prop, "vs", scheduled_class.prop, ". Compare difficulty.")
                     if checkDiffConflict(ws, scheduled_class) == True:
-                        # print("Prop conflict.")
+                        print("Difficulty conflict.")
                         return True
                     elif checkDiffConflict(ws, scheduled_class) == False:
-                        # print("No difficulty conflict! -checkPropConflict")
+                        print("No difficulty conflict! -checkPropConflict")
                         return False
                     else:
                         print("Error in checkDiffs")
@@ -195,27 +204,29 @@ for ws in workshop_list: #for every workshop in the list,
     _scheduled = False
     i = 0
     while _scheduled == False:
-        if i == 10:
+        if i > 9:
             print("A workshop couldn't be scheduled for some reason.")
             extra_workshops.append(ws)
             _scheduled = True #not really haha!
+            break
         timeslot = list_of_times[i]
-        # print("SCHEDULING: " + ws.title + " with " + ws.teacher)
-        # print("Timeslot: ", str(i + 1))
-        if len(timeslot) > 8:
+        print("SCHEDULING: " + ws.title + " with " + ws.teacher)
+        print("Timeslot: ", i)
+        if len(timeslot) > 9:
             if i == 9:
                 print("Workshop can't! Last timeslot is full!")
                 extra_workshops.append(ws)
-            print("Timeslot", (i+1), "is full")
+                _scheduled = True
+            print("Timeslot", (i), "is full")
             i += 1
-        elif ws.teacher in getCurrentTeacherList(i): #check workshop teacher against timeslot (and last timeslot)
+        elif str(ws.teacher).casefold() in str(getCurrentTeacherList(i)).casefold(): #check workshop teacher against timeslot (and last timeslot)
             print("Teacher conflict")
             i += 1
         elif checkPropConflict(i, ws, timeslot) == True:
-            print("Potential prop conflict") #this is fine; update checkPropConflict() with difficulty checker!
+            print("checkPropConflict returned True")
             i += 1
         else:
-            print("Appending", ws.title, "to", list_of_timenames[i])
+            print("Appending", ws.title, "-", ws.teacher, "to", list_of_timenames[i])
             timeslot.append(ws)
             _scheduled = True
 
@@ -227,24 +238,10 @@ def printSchedule():
     for time in list_of_times:
         print("\n TIMESLOT:", list_of_timenames[i])
         for ws in time:
-            print(ws.title, "with", ws.teacher, ". Prop:", ws.prop, "Difficulty:", ws.diff)
+            print(ws.title, "with", ws.teacher + ". Prop:", ws.prop, "Difficulty:", ws.diff)
         i += 1
-    print("Extra workshops: ")
+    print("\n Extra workshops: ")
     for ws in extra_workshops:
         print(ws. title, "with", ws.teacher)
 
 printSchedule()
-
-
-
-"""
-is the timeslot full?
-
-is there a similar prop?
-in a similar difficulty?
-
-is it lunch or morning?
-is the teacher teaching now or before?
-is it show tech?
-
-"""
