@@ -7,13 +7,14 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+import random
 
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID and range of a sample spreadsheet.
 instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
-instructor_spreadsheet_range = 'Sheet1!A2:AX99' #Define a range of rows. "Class Data" is a sheet name.
+instructor_spreadsheet_range = 'automation_test_2!A2:AX99' #Define a range of rows. "Class Data" is a sheet name.
 schedule_spreadsheet_id = ""
 
 extra_workshops = []
@@ -99,7 +100,7 @@ def get_workshops(row):
         _teacher = row[2] #if no stage name, use given name
     if row[17] != '': #if "first workshop title" isn't blank,
         _title = row[17] #grab the title
-        _prop = row[19] #grab the prop
+        _prop = str(row[19]) #grab the prop
         _difficulty = get_workshop_difficulty(row[20]) #grab the difficulty
         _workshop = Workshop(_teacher, _title, _prop, _difficulty) #make a new workshop object
         workshop_list.append(_workshop) #stick it in the list!
@@ -197,6 +198,7 @@ def checkPropConflict(i, ws, timeslot):
 if __name__ == '__main__':
     main()
 
+random.shuffle(workshop_list)
 for ws in workshop_list: #for every workshop in the list,
     _scheduled = False
     i = 0
@@ -245,3 +247,4 @@ printSchedule()
 
 
 #note to future self: you probably need to chop the special characters out of each prop description. run a "find/replace" as the next step once the app settles down
+# ^^ this is done and it didn't fix the problem. The problem seems to be with checkDiffs, or with its ability to stop a class from getting scheduled
