@@ -19,6 +19,7 @@ schedule_spreadsheet_id = ""
 
 #some useful variables.
 extra_workshops = []
+extra_workshops_2 = []
 workshop_list = []
 fri_1000 = []
 fri_1130 = []
@@ -234,6 +235,44 @@ def buildWorkshopSchedule(workshop_list):
                 timeslot.append(ws)
                 _scheduled = True
 
+def tryAgain(workshop_list):
+    for ws in workshop_list: #for every workshop in the list,
+        _scheduled = False
+        i = 0
+        # print("SCHEDULING: " + ws.title + " with " + ws.teacher)
+        while _scheduled == False:
+            if i > 9:
+                # print("A workshop couldn't be scheduled for some reason.")
+                extra_workshops_2.append(ws)
+                _scheduled = True #not really haha!
+                break
+            timeslot = list_of_times[i]
+            # print("Timeslot: ", i)
+            if len(timeslot) > 9:
+                if i == 9:
+                    # print("The last timeslot is full!")
+                    extra_workshops_2.append(ws)
+                    _scheduled = True
+                # print("Timeslot", (i), "is full")
+                # print("Advancing timeslot from ", list_of_timenames[i], "to", list_of_timenames[i+1])
+                i += 1
+                continue
+            elif str(ws.teacher).lower() in str(getCurrentTeacherList(i)).lower(): #check workshop teacher against timeslot (and last timeslot)
+                # print("Teacher conflict")
+                # print("Advancing timeslot from ", list_of_timenames[i], "to", list_of_timenames[i+1])
+                i += 1
+                continue
+            elif checkPropConflict(i, ws, timeslot) == True:
+                # print("checkPropConflict returned True")
+                # print("Advancing timeslot from ", list_of_timenames[i], "to", list_of_timenames[i+1])
+                i += 1
+                continue
+            else:
+                print("Appending", ws.title, "-", ws.teacher, "to", list_of_timenames[i])
+                # print("Prop:", ws.prop, ws.diff, ". Prop list: ", getCurrentPropList(i))
+                timeslot.append(ws)
+                _scheduled = True
+
 def printSchedule():
     i = 0
     for time in list_of_times:
@@ -246,5 +285,7 @@ def printSchedule():
         print(ws. title, "with", ws.teacher)
 
 buildWorkshopSchedule(workshop_list)
+test_1 = len(extra_workshops)
 printSchedule()
-
+tryAgain(extra_workshops)
+print("1: ", test_1, "2: ", len(extra_workshops_2))
