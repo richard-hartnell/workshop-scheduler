@@ -14,7 +14,7 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID and range of a sample spreadsheet.
 instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
-instructor_spreadsheet_range = 'automation_test_2!A2:AX99' #Define a range of rows. "automation_test_2" is a sheet name here.
+instructor_spreadsheet_range = 'WORKSHOPS!A2:AX99' #Define a range of rows. "automation_test_2" is a sheet name here.
 schedule_spreadsheet_id = ""
 
 #some useful variables.
@@ -159,7 +159,7 @@ def getCurrentPropList(i): #get a list of props in THIS timeslot.
     return _temp_prop_list
 
 def checkDiffConflict(a, b): #check relative difficulty of any workshop in the same prop.
-    if len(a.prop) > 5 or len(b.prop) > 5 or a.prop == 'misc' or b.prop == 'misc':
+    if len(a.prop) > 5 or len(b.prop) > 5 or a.prop == 'Misc-Prop' or b.prop == 'Misc-Prop':
         # print("One class is miscellaneous. Don't worry about it.")
         return False 
     if a.diff or b.diff == None:
@@ -176,6 +176,9 @@ def checkDiffConflict(a, b): #check relative difficulty of any workshop in the s
 
 def checkPropConflict(i, ws, timeslot):
     _current_prop_list = getCurrentPropList(i)
+    if len(ws.prop) > 4 or 'Misc-Prop' in ws.prop:
+        # print("Check")
+        return False
     for individual_prop in ws.prop:
         individual_prop = individual_prop.replace("[","").replace("]","").replace("'",'').lower()
         _strung_prop_list = str(_current_prop_list)
@@ -284,8 +287,8 @@ def printSchedule():
     for ws in extra_workshops:
         print(ws. title, "with", ws.teacher)
 
+# random.shuffle(workshop_list)
 buildWorkshopSchedule(workshop_list)
-test_1 = len(extra_workshops)
 printSchedule()
-tryAgain(extra_workshops)
-print("1: ", test_1, "2: ", len(extra_workshops_2))
+print("Length of workshop_list: ", len(workshop_list))
+print("Length of extra_workshops: ", len(extra_workshops))
