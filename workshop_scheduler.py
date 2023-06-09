@@ -292,3 +292,8 @@ buildWorkshopSchedule(workshop_list)
 printSchedule()
 print("Length of workshop_list: ", len(workshop_list))
 print("Length of extra_workshops: ", len(extra_workshops))
+talky_classes = []
+for workshop in workshop_list:
+    if "talk" in workshop.prop:
+        talky_classes.append(workshop)
+print("Talks: ", len(talky_classes))
