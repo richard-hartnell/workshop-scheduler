@@ -7,6 +7,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from csv import writer
 import random
 
 # If modifying these scopes, delete the file token.json.
@@ -213,7 +214,7 @@ def buildWorkshopSchedule(workshop_list):
                 break
             timeslot = list_of_times[i]
             # print("Timeslot: ", i)
-            if len(timeslot) > 9:
+            if len(timeslot) > 8:
                 if i == 9:
                     # print("The last timeslot is full!")
                     extra_workshops.append(ws)
@@ -238,44 +239,6 @@ def buildWorkshopSchedule(workshop_list):
                 timeslot.append(ws)
                 _scheduled = True
 
-def tryAgain(workshop_list):
-    for ws in workshop_list: #for every workshop in the list,
-        _scheduled = False
-        i = 0
-        # print("SCHEDULING: " + ws.title + " with " + ws.teacher)
-        while _scheduled == False:
-            if i > 9:
-                # print("A workshop couldn't be scheduled for some reason.")
-                extra_workshops_2.append(ws)
-                _scheduled = True #not really haha!
-                break
-            timeslot = list_of_times[i]
-            # print("Timeslot: ", i)
-            if len(timeslot) > 9:
-                if i == 9:
-                    # print("The last timeslot is full!")
-                    extra_workshops_2.append(ws)
-                    _scheduled = True
-                # print("Timeslot", (i), "is full")
-                # print("Advancing timeslot from ", list_of_timenames[i], "to", list_of_timenames[i+1])
-                i += 1
-                continue
-            elif str(ws.teacher).lower() in str(getCurrentTeacherList(i)).lower(): #check workshop teacher against timeslot (and last timeslot)
-                # print("Teacher conflict")
-                # print("Advancing timeslot from ", list_of_timenames[i], "to", list_of_timenames[i+1])
-                i += 1
-                continue
-            elif checkPropConflict(i, ws, timeslot) == True:
-                # print("checkPropConflict returned True")
-                # print("Advancing timeslot from ", list_of_timenames[i], "to", list_of_timenames[i+1])
-                i += 1
-                continue
-            else:
-                print("Appending", ws.title, "-", ws.teacher, "to", list_of_timenames[i])
-                # print("Prop:", ws.prop, ws.diff, ". Prop list: ", getCurrentPropList(i))
-                timeslot.append(ws)
-                _scheduled = True
-
 def printSchedule():
     i = 0
     for time in list_of_times:
@@ -296,4 +259,37 @@ talky_classes = []
 for workshop in workshop_list:
     if "talk" in workshop.prop:
         talky_classes.append(workshop)
-print("Talks: ", len(talky_classes))
+print("Talks: ")
+for talk in talky_classes:
+    print(talk.title, "with", talk.teacher)
+print("Attempting to write CSV...")
+
+def scheduleToCsv():
+    with open('event.csv', 'a') as csv_to_write:
+        writer(csv_to_write).writerow(['','MOON','HEART','CIRCLE','SQUARE','HEX','STAR','SPIRAL','DIAMOND'])
+        nextline = []
+        i = 0
+        for time in list_of_times:
+            nextline = []
+            # begin row with timeslot name
+            nextline.append(list_of_timenames[i])
+            #iterate over workshops in slot and add all titles
+            for workshop in time:
+                nextline.append(workshop.title)
+            #append the line to CSV
+            writer(csv_to_write).writerow(nextline)
+            #re-init nextline with an empty space below timeslot title
+            nextline = ['']
+            #iterate over workshops in slot and add instructor names
+            for workshop in time:
+                nextline.append(workshop.teacher)
+            #append the line
+            writer(csv_to_write).writerow(nextline)
+            #special cases
+            if i == 1 or i == 6:
+                writer(csv_to_write).writerow(['LUNCH'])
+            if i == 4:
+                writer(csv_to_write).writerow(['SATURDAY'])
+            i += 1
+
+scheduleToCsv()
