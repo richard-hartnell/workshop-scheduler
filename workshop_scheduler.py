@@ -32,6 +32,7 @@ sat_1130 = []
 sat_1430 = []
 sat_1600 = []
 sat_1730 = []
+teacher_list = []
 list_of_times = [fri_1000, fri_1130, fri_1430, fri_1600, fri_1730,
                  sat_1000, sat_1130, sat_1430, sat_1600, sat_1730]
 list_of_timenames = ["fri_1000", "fri_1130", "fri_1430", "fri_1600", "fri_1730",
@@ -239,6 +240,11 @@ def buildWorkshopSchedule(workshop_list):
                 timeslot.append(ws)
                 _scheduled = True
 
+def makeTeacherList():
+    for ws in workshop_list:
+        if ws.teacher not in teacher_list:
+            teacher_list.append(ws.teacher)
+
 def printSchedule():
     i = 0
     for time in list_of_times:
@@ -252,19 +258,19 @@ def printSchedule():
 
 # random.shuffle(workshop_list)
 buildWorkshopSchedule(workshop_list)
-printSchedule()
-print("Length of workshop_list: ", len(workshop_list))
-print("Length of extra_workshops: ", len(extra_workshops))
-talky_classes = []
-for workshop in workshop_list:
-    if "talk" in workshop.prop:
-        talky_classes.append(workshop)
-print("Talks: ")
-for talk in talky_classes:
-    print(talk.title, "with", talk.teacher)
-print("Attempting to write CSV...")
+# printSchedule()
+# print("Length of workshop_list: ", len(workshop_list))
+# print("Length of extra_workshops: ", len(extra_workshops))
+# talky_classes = []
+# for workshop in workshop_list:
+#     if "talk" in workshop.prop:
+#         talky_classes.append(workshop)
+# print("Talks: ")
+# for talk in talky_classes:
+#     print(talk.title, "with", talk.teacher)
 
 def scheduleToCsv():
+    print("Attempting to write CSV...")
     with open('event.csv', 'a') as csv_to_write:
         writer(csv_to_write).writerow(['','MOON','HEART','CIRCLE','SQUARE','HEX','STAR','SPIRAL','DIAMOND'])
         nextline = []
@@ -292,4 +298,67 @@ def scheduleToCsv():
                 writer(csv_to_write).writerow(['SATURDAY'])
             i += 1
 
-scheduleToCsv()
+# scheduleToCsv()
+makeTeacherList()
+
+def makeLetters():
+    show_list = ['Abi Lindsey',
+                'Bella LaRue',
+                'Exuro Piechocki',
+                'Scramble James',
+                'Alison Lockfeld',
+                'Haley Doran',
+                'Enrico Vinholi',
+                'Lance Woods',
+                'Ling Ling Lee',
+                'Eli March',
+                'Kendall Moyer',
+                'Matan Presberg',
+                'Allie T',
+                'Tyfoods']
+    for teacher in teacher_list:
+        filename = "./letters/" + teacher.replace(" ", "_") + ".txt"
+        shops = []
+        show_decision = ""
+        for ws in workshop_list:
+            if ws.teacher == teacher:
+                shops.append(ws.title)
+        totalmoney = len(shops) * 50
+        # greeting = "Hellooooo " + teacher + "!"  + '\n\n'
+        # paragraph1 = "So happy to finally be sending you this email confirming your offer from Kindle NW. Thanks for hanging on for as long as you have about our decision-making process this year." + '\n\n'
+        # paragraph2 = "We've selected your following workshop offerings for our schedule: " + '\n'
+        shopstring = '\n'.join(str(shop) for shop in shops)
+        # paragraph3 = "A draft workshop schedule will be coming out very soon. I may edit some of your workshop titles for length, clarity, spelling, etc." + '\n\n'
+        if teacher in show_list:
+            totalmoney += 100
+            show_decision = "We also selected you for an act in the show! Please expect another email from Riel Green, our show coordinator, following this one."
+        else:
+            show_decision = "You are not on the roster for this year's show. A little less glory, but a lot fewer responsibilities...!"
+        # paragraph5 = "We have budgeted XX to compensate you for your contribution to the event." + '\n\n'
+        # paragraph6 = "We know that this is better than most festivals pay, but we also know that it's not a lot for a weekend's work. We wish we would pay like corporate clients! In the case that you do have to bail out for another gig or any other reason, we understand; but please let us know ASAP by replying to this email." + '\n\n'
+        # paragraph8 = "Again, thanks so much for applying and we'll see you in the woods so soon!" + '\n\n'
+        # closing = "Y'all's truly," + '\n' + "Richard Hartnell" + '\n' + "Team Workshops, Kindle NW"
+        # lettercontent = greeting + paragraph1 + paragraph2 + shopstring + '\n\n' + paragraph3 + paragraph4 + paragraph5 + paragraph6 + paragraph8 + closing
+        if teacher == 'Abi Lindsey':
+            with open(filename, 'a+') as file:
+                # file.write(lettercontent)
+                file.write(f'''
+Hellooooo {teacher}!
+                           
+So happy to finally be sending you this email confirming your offer from Kindle NW. Thanks for hanging on for as long as you have about our decision-making process this year.
+                           
+We've selected your following workshop offerings for our schedule: 
+                           
+{shopstring}
+                           
+{show_decision}
+
+We have budgeted XX to compensate you for your contribution to the event. Of course we wish we could pay like corporate clients...! In the case that you do have to bail out for another gig or any other reason, we understand; but please let us know ASAP by replying to this email.
+
+Again, thanks so much for applying and we'll see you in the woods so soon!
+
+Y'all's truly,
+Richard Hartnell
+Team Workshops, Kindle NW''')
+
+makeLetters()
