@@ -18,6 +18,14 @@ instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
 instructor_spreadsheet_range = 'WORKSHOPS!A2:AX99' #Define a range of rows. "automation_test_2" is a sheet name here.
 schedule_spreadsheet_id = ""
 
+# define workshop object
+class Workshop:
+    def __init__(self, teacher, title, prop, diff):
+        self.teacher = teacher #stage name if given, else given name
+        self.title = title #workshop title
+        self.prop = list(str(prop).split(", ")) #check boxes, not radio buttons
+        self.diff = diff #difficulty
+
 #some useful variables.
 extra_workshops = []
 extra_workshops_2 = []
@@ -39,26 +47,21 @@ list_of_timenames = ["fri_1000", "fri_1130", "fri_1430", "fri_1600", "fri_1730",
                  "sat_1000", "sat_1130", "sat_1430", "sat_1600", "sat_1730", "END_OF_TIME"]
 # list_of_exempt_times = [fri_1000, fri_1430, sat_1000, sat_1430] #times we don't worry about teacher conflicts
 list_of_tech_times = [fri_1600, fri_1730] #reserved for gala performers
+#big prop jams automatically slotted. note: these never enter workshop_list.
+POIJAM = Workshop('Everyone!', 'POI JAM', 'poi', 9)
+STAFFJAM = Workshop('Everyone!', 'STAFF JAM', ['single-staff', 'multi-staff'], 9)
+HOOPJAM = Workshop('Everyone!', 'HOOP JAM', 'hoop', 9)
+JUGGLEJAM = Workshop('Everyone!', 'JUGGLE JAM', ['ball', 'club'], 9)
+fri_1430.append(POIJAM)
+sat_1130.append(STAFFJAM)
+sat_1430.append(JUGGLEJAM)
+sat_1600.append(HOOPJAM)
 
-# define workshop and timeslot object classes
-class Workshop:
-    def __init__(self, teacher, title, prop, diff):
-        self.teacher = teacher #stage name if given, else given name
-        self.title = title #workshop title
-        self.prop = list(str(prop).split(", ")) #check boxes, not radio buttons
-        self.diff = diff #difficulty
-
-def main(): #fetches all the remote data and builds workshop_list."
-    """Shows basic usage of the Sheets API.
-    Prints values from a sample spreadsheet.
-    """
+def fetch_schedule(): #fetches all the remote data and builds workshop_list."
     creds = None
-    # The file token.json stores the user's access and refresh tokens, and is
-    # created automatically when the authorization flow completes for the first
-    # time.
-    if os.path.exists('token.json'):
+    if os.path.exists('token.json'): #this file provides credentials. if it's toast, just delete it and re-run
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, let the user log in.
+    # If there are no (valid) credentials available, this prompts a Google login.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -69,16 +72,13 @@ def main(): #fetches all the remote data and builds workshop_list."
         # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
-
     try:
         service = build('sheets', 'v4', credentials=creds)
-
         # Call the Sheets API
         sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId=instructor_spreadsheet_id,  #CREATE A DICT(?) OF THIS SHEET
-                                    range=instructor_spreadsheet_range).execute()      #RANGE OF ROWS 
+        result = sheet.values().get(spreadsheetId=instructor_spreadsheet_id,  #creates a dict(?) of this sheet
+                                    range=instructor_spreadsheet_range).execute()      #for a range of rows
         values = result.get('values', [])
-
         if not values:
             print('No data found.')
             return
@@ -122,7 +122,6 @@ def get_workshops(row):
         _difficulty = get_workshop_difficulty(row[32])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-
 def print_the_schedule(): #pretty self-explanatory. this should be expanded into create_schedule or something.
     print("THE SCHEDULE:")
     timecounter = 0
@@ -131,17 +130,6 @@ def print_the_schedule(): #pretty self-explanatory. this should be expanded into
         print("Time: " + str(list_of_timenames[timecounter - 1]))
         for thing in time:
             print("Workshop: " + thing.title + " with " + thing.teacher)
-
-#big prop jams automatically slotted. note: these never enter workshop_list.
-POIJAM = Workshop('Everyone!', 'POI JAM', 'poi', 9)
-STAFFJAM = Workshop('Everyone!', 'STAFF JAM', ['single-staff', 'multi-staff'], 9)
-HOOPJAM = Workshop('Everyone!', 'HOOP JAM', 'hoop', 9)
-JUGGLEJAM = Workshop('Everyone!', 'JUGGLE JAM', ['ball', 'club'], 9)
-fri_1430.append(POIJAM)
-sat_1130.append(STAFFJAM)
-sat_1430.append(JUGGLEJAM)
-sat_1600.append(HOOPJAM)
-
 def getCurrentTeacherList(i): #creates a list of teachers of concern so that nobody's double-booked.
     current_teacher_list = [] #initialize.
     for workshop in list_of_times[i]: #append every teacher in the current timeslot.
@@ -153,13 +141,11 @@ def getCurrentTeacherList(i): #creates a list of teachers of concern so that nob
         for workshop in list_of_times[i+1]: #append every teacher in that timeslot.
             current_teacher_list.append(workshop.teacher)
     return current_teacher_list
-
 def getCurrentPropList(i): #get a list of props in THIS timeslot.
     _temp_prop_list = [] #initialize
     for workshop in list_of_times[i]: #and iterate over this timeslot.
         _temp_prop_list.append(str(workshop.prop).replace("[","").replace("]","").replace("'",'').lower()) #clean and stringify
     return _temp_prop_list
-
 def checkDiffConflict(a, b): #check relative difficulty of any workshop in the same prop.
     if len(a.prop) > 5 or len(b.prop) > 5 or a.prop == 'Misc-Prop' or b.prop == 'Misc-Prop':
         # print("One class is miscellaneous. Don't worry about it.")
@@ -175,7 +161,6 @@ def checkDiffConflict(a, b): #check relative difficulty of any workshop in the s
         return True
     else:
         return False
-
 def checkPropConflict(i, ws, timeslot):
     _current_prop_list = getCurrentPropList(i)
     if len(ws.prop) > 4 or 'Misc-Prop' in ws.prop:
@@ -198,10 +183,6 @@ def checkPropConflict(i, ws, timeslot):
         else:
             # print("checkDiffConflict: false. Prop1:", individual_prop, ws.diff, ". Prop list: ", str(_current_prop_list))
             return False
-
-if __name__ == '__main__':
-    main()
-
 def buildWorkshopSchedule(workshop_list):
     for ws in workshop_list: #for every workshop in the list,
         _scheduled = False
@@ -239,36 +220,10 @@ def buildWorkshopSchedule(workshop_list):
                 # print("Prop:", ws.prop, ws.diff, ". Prop list: ", getCurrentPropList(i))
                 timeslot.append(ws)
                 _scheduled = True
-
 def makeTeacherList():
     for ws in workshop_list:
         if ws.teacher not in teacher_list:
             teacher_list.append(ws.teacher)
-
-def printSchedule():
-    i = 0
-    for time in list_of_times:
-        print("\n TIMESLOT:", list_of_timenames[i])
-        for ws in time:
-            print(ws.title, "with", ws.teacher + ". Prop:", ws.prop, "Difficulty:", ws.diff)
-        i += 1
-    print("\n Extra workshops: ")
-    for ws in extra_workshops:
-        print(ws. title, "with", ws.teacher)
-
-# random.shuffle(workshop_list)
-buildWorkshopSchedule(workshop_list)
-# printSchedule()
-# print("Length of workshop_list: ", len(workshop_list))
-# print("Length of extra_workshops: ", len(extra_workshops))
-# talky_classes = []
-# for workshop in workshop_list:
-#     if "talk" in workshop.prop:
-#         talky_classes.append(workshop)
-# print("Talks: ")
-# for talk in talky_classes:
-#     print(talk.title, "with", talk.teacher)
-
 def scheduleToCsv():
     print("Attempting to write CSV...")
     with open('event.csv', 'a') as csv_to_write:
@@ -297,10 +252,16 @@ def scheduleToCsv():
             if i == 4:
                 writer(csv_to_write).writerow(['SATURDAY'])
             i += 1
-
-# scheduleToCsv()
-makeTeacherList()
-
+def printSchedule():
+    i = 0
+    for time in list_of_times:
+        print("\n TIMESLOT:", list_of_timenames[i])
+        for ws in time:
+            print(ws.title, "with", ws.teacher + ". Prop:", ws.prop, "Difficulty:", ws.diff)
+        i += 1
+    print("\n Extra workshops: ")
+    for ws in extra_workshops:
+        print(ws. title, "with", ws.teacher)
 def makeLetters():
     show_list = ['Abi Lindsey',
                 'Bella LaRue',
@@ -324,26 +285,15 @@ def makeLetters():
             if ws.teacher == teacher:
                 shops.append(ws.title)
         totalmoney = len(shops) * 50
-        # greeting = "Hellooooo " + teacher + "!"  + '\n\n'
-        # paragraph1 = "So happy to finally be sending you this email confirming your offer from Kindle NW. Thanks for hanging on for as long as you have about our decision-making process this year." + '\n\n'
-        # paragraph2 = "We've selected your following workshop offerings for our schedule: " + '\n'
         shopstring = '\n'.join(str(shop) for shop in shops)
-        # paragraph3 = "A draft workshop schedule will be coming out very soon. I may edit some of your workshop titles for length, clarity, spelling, etc." + '\n\n'
         if teacher in show_list:
             totalmoney += 100
             show_decision = "We also selected you for an act in the show! Please expect another email from Riel Green, our show coordinator, following this one."
         else:
             show_decision = "You are not on the roster for this year's show. A little less glory, but a lot fewer responsibilities...!"
-        # paragraph5 = "We have budgeted XX to compensate you for your contribution to the event." + '\n\n'
-        # paragraph6 = "We know that this is better than most festivals pay, but we also know that it's not a lot for a weekend's work. We wish we would pay like corporate clients! In the case that you do have to bail out for another gig or any other reason, we understand; but please let us know ASAP by replying to this email." + '\n\n'
-        # paragraph8 = "Again, thanks so much for applying and we'll see you in the woods so soon!" + '\n\n'
-        # closing = "Y'all's truly," + '\n' + "Richard Hartnell" + '\n' + "Team Workshops, Kindle NW"
-        # lettercontent = greeting + paragraph1 + paragraph2 + shopstring + '\n\n' + paragraph3 + paragraph4 + paragraph5 + paragraph6 + paragraph8 + closing
         if teacher == 'Abi Lindsey':
             with open(filename, 'a+') as file:
-                # file.write(lettercontent)
-                file.write(f'''
-Hellooooo {teacher}!
+                file.write(f'''Hellooooo {teacher}!
                            
 So happy to finally be sending you this email confirming your offer from Kindle NW. Thanks for hanging on for as long as you have about our decision-making process this year.
                            
@@ -361,4 +311,25 @@ Y'all's truly,
 Richard Hartnell
 Team Workshops, Kindle NW''')
 
-makeLetters()
+def main():
+    random.shuffle(workshop_list)
+    fetch_schedule()
+    buildWorkshopSchedule(workshop_list)
+    makeTeacherList()
+    # printSchedule()
+    print("Length of workshop_list: ", len(workshop_list))
+    print("Length of extra_workshops: ", len(extra_workshops))
+    for workshop in extra_workshops:
+        print(workshop.title + " with " + workshop.teacher)
+    # # talky_classes = []
+    # # for workshop in workshop_list:
+    # #     if "talk" in workshop.prop:
+    # #         talky_classes.append(workshop)
+    # # print("Talks: ")
+    # # for talk in talky_classes:
+    # #     print(talk.title, "with", talk.teacher)
+    # scheduleToCsv()
+    # makeLetters()
+
+if __name__ == '__main__':
+    main()
