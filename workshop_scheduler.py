@@ -227,7 +227,7 @@ def makeTeacherList():
 def scheduleToCsv():
     print("Attempting to write CSV...")
     with open('event.csv', 'a') as csv_to_write:
-        writer(csv_to_write).writerow(['','MOON','HEART','CIRCLE','SQUARE','HEX','STAR','SPIRAL','DIAMOND'])
+        writer(csv_to_write).writerow(['','MOON','HEART','CIRCLE','SQUARE','HEX','STAR','LODGE','TENT','RANGE','CIRCLE'])
         nextline = []
         i = 0
         for time in list_of_times:
@@ -288,31 +288,28 @@ def makeLetters():
         shopstring = '\n'.join(str(shop) for shop in shops)
         if teacher in show_list:
             totalmoney += 100
-            show_decision = "We also selected you for an act in the show! Please expect another email from Riel Green, our show coordinator, following this one."
+            show_decision = "We also selected your act for the show! Please expect an additional email from Riel Green, our show coordinator, following this email."
         else:
             show_decision = "You are not on the roster for this year's show. A little less glory, but a lot fewer responsibilities...!"
-        if teacher == 'Abi Lindsey':
-            with open(filename, 'a+') as file:
-                file.write(f'''Hellooooo {teacher}!
-                           
-So happy to finally be sending you this email confirming your offer from Kindle NW. Thanks for hanging on for as long as you have about our decision-making process this year.
-                           
+        with open(filename, 'a+') as file:
+            file.write(f'''Hellooooo {teacher}!
+                        
+So happy to finally send you this email confirming your offer from Kindle NW. Thanks for hanging on for as long as you have for this info.
+
 We've selected your following workshop offerings for our schedule: 
-                           
+
 {shopstring}
-                           
+
 {show_decision}
 
-We have budgeted XX to compensate you for your contribution to the event. Of course we wish we could pay like corporate clients...! In the case that you do have to bail out for another gig or any other reason, we understand; but please let us know ASAP by replying to this email.
+We have $XX and Y event passes budgeted to compensate you for this contribution to the event. Thanks for your willingness to be part of this by-artists-for-artists thing <3 If you have any questions or updates for us, you can just reply to this email. If you need an advance for travel costs, we have a few stipends available for that but please reach out right away.
 
-Again, thanks so much for applying and we'll see you in the woods so soon!
+See you in the woods!
 
-Y'all's truly,
 Richard Hartnell
 Team Workshops, Kindle NW''')
 
 def main():
-    random.shuffle(workshop_list)
     fetch_schedule()
     buildWorkshopSchedule(workshop_list)
     makeTeacherList()
@@ -321,13 +318,7 @@ def main():
     print("Length of extra_workshops: ", len(extra_workshops))
     for workshop in extra_workshops:
         print(workshop.title + " with " + workshop.teacher)
-    # # talky_classes = []
-    # # for workshop in workshop_list:
-    # #     if "talk" in workshop.prop:
-    # #         talky_classes.append(workshop)
-    # # print("Talks: ")
-    # # for talk in talky_classes:
-    # #     print(talk.title, "with", talk.teacher)
+# un-comment to write event.csv and/or make response letters
     # scheduleToCsv()
     # makeLetters()
 
