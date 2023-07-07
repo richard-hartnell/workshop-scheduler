@@ -10,21 +10,18 @@ from googleapiclient.errors import HttpError
 from csv import writer
 import random
 
-# If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
-# The ID and range of a sample spreadsheet.
 instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
 instructor_spreadsheet_range = 'WORKSHOPS!A2:AX99' #Define a range of rows. "automation_test_2" is a sheet name here.
 schedule_spreadsheet_id = ""
 
-# define workshop object
 class Workshop:
     def __init__(self, teacher, title, prop, diff):
-        self.teacher = teacher #stage name if given, else given name
-        self.title = title #workshop title
-        self.prop = list(str(prop).split(", ")) #check boxes, not radio buttons
-        self.diff = diff #difficulty
+        self.teacher = teacher
+        self.title = title
+        self.prop = list(str(prop).split(", "))
+        self.diff = diff
 
 #some useful variables.
 extra_workshops = []
@@ -45,7 +42,6 @@ list_of_times = [fri_1000, fri_1130, fri_1430, fri_1600, fri_1730,
                  sat_1000, sat_1130, sat_1430, sat_1600, sat_1730]
 list_of_timenames = ["fri_1000", "fri_1130", "fri_1430", "fri_1600", "fri_1730",
                  "sat_1000", "sat_1130", "sat_1430", "sat_1600", "sat_1730", "END_OF_TIME"]
-# list_of_exempt_times = [fri_1000, fri_1430, sat_1000, sat_1430] #times we don't worry about teacher conflicts
 list_of_tech_times = [fri_1600, fri_1730] #reserved for gala performers
 #big prop jams automatically slotted. note: these never enter workshop_list.
 POIJAM = Workshop('Everyone!', 'POI JAM', 'poi', 9)
@@ -61,7 +57,6 @@ def fetch_schedule(): #fetches all the remote data and builds workshop_list."
     creds = None
     if os.path.exists('token.json'): #this file provides credentials. if it's toast, just delete it and re-run
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-    # If there are no (valid) credentials available, this prompts a Google login.
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
@@ -69,12 +64,10 @@ def fetch_schedule(): #fetches all the remote data and builds workshop_list."
             flow = InstalledAppFlow.from_client_secrets_file(
                 'credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
-        # Save the credentials for the next run
         with open('token.json', 'w') as token:
             token.write(creds.to_json())
     try:
         service = build('sheets', 'v4', credentials=creds)
-        # Call the Sheets API
         sheet = service.spreadsheets()
         result = sheet.values().get(spreadsheetId=instructor_spreadsheet_id,  #creates a dict(?) of this sheet
                                     range=instructor_spreadsheet_range).execute()      #for a range of rows
@@ -122,16 +115,15 @@ def get_workshops(row):
         _difficulty = get_workshop_difficulty(row[32])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-def print_the_schedule(): #pretty self-explanatory. this should be expanded into create_schedule or something.
-    print("THE SCHEDULE:")
+def print_the_schedule():
     timecounter = 0
     for time in list_of_times:
         timecounter += 1
         print("Time: " + str(list_of_timenames[timecounter - 1]))
         for thing in time:
             print("Workshop: " + thing.title + " with " + thing.teacher)
-def getCurrentTeacherList(i): #creates a list of teachers of concern so that nobody's double-booked.
-    current_teacher_list = [] #initialize.
+def getCurrentTeacherList(i):
+    current_teacher_list = []
     for workshop in list_of_times[i]: #append every teacher in the current timeslot.
         current_teacher_list.append(workshop.teacher) 
     if i in [1, 3, 4, 6, 8, 9]: #check behind if the slot before isn't lunch or yesterday.
