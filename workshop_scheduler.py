@@ -69,8 +69,8 @@ def fetch_schedule(): #fetches all the remote data and builds workshop_list."
     try:
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId=instructor_spreadsheet_id,  #creates a dict(?) of this sheet
-                                    range=instructor_spreadsheet_range).execute()      #for a range of rows
+        result = sheet.values().get(spreadsheetId=instructor_spreadsheet_id,
+                                    range=instructor_spreadsheet_range).execute()
         values = result.get('values', [])
         if not values:
             print('No data found.')
@@ -92,11 +92,11 @@ def get_workshops(row):
     else:
         _teacher = row[2] #if no stage name, use given name
     if row[17] != '': #if "first workshop title" isn't blank,
-        _title = row[17] #grab the title
-        _prop = str(row[19]).lower() #grab the prop and lowercase it.
-        _difficulty = get_workshop_difficulty(row[20]) #grab the difficulty
-        _workshop = Workshop(_teacher, _title, _prop, _difficulty) #make a new workshop object
-        workshop_list.append(_workshop) #stick it in the list!
+        _title = row[17]
+        _prop = str(row[19]).lower()
+        _difficulty = get_workshop_difficulty(row[20])
+        _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+        workshop_list.append(_workshop)
     if row[21] != "": #repeat for 2nd workshop if present
         _title = row[21]
         _prop = str(row[23]).lower()
@@ -124,92 +124,70 @@ def print_the_schedule():
             print("Workshop: " + thing.title + " with " + thing.teacher)
 def getCurrentTeacherList(i):
     current_teacher_list = []
-    for workshop in list_of_times[i]: #append every teacher in the current timeslot.
+    for workshop in list_of_times[i]:
         current_teacher_list.append(workshop.teacher) 
-    if i in [1, 3, 4, 6, 8, 9]: #check behind if the slot before isn't lunch or yesterday.
-        for workshop in list_of_times[i-1]: #append every teacher in that timeslot.
+    if i in [1, 3, 4, 6, 8, 9]:
+        for workshop in list_of_times[i-1]:
             current_teacher_list.append(workshop.teacher) 
-    if i in [0, 2, 3, 5, 7, 8]: #check ahead if the slot isn't before lunch or last in the day.
-        for workshop in list_of_times[i+1]: #append every teacher in that timeslot.
+    if i in [0, 2, 3, 5, 7, 8]:
+        for workshop in list_of_times[i+1]:
             current_teacher_list.append(workshop.teacher)
     return current_teacher_list
-def getCurrentPropList(i): #get a list of props in THIS timeslot.
-    _temp_prop_list = [] #initialize
-    for workshop in list_of_times[i]: #and iterate over this timeslot.
+def getCurrentPropList(i):
+    _temp_prop_list = []
+    for workshop in list_of_times[i]:
         _temp_prop_list.append(str(workshop.prop).replace("[","").replace("]","").replace("'",'').lower()) #clean and stringify
     return _temp_prop_list
-def checkDiffConflict(a, b): #check relative difficulty of any workshop in the same prop.
+def checkDiffConflict(a, b):
     if len(a.prop) > 5 or len(b.prop) > 5 or a.prop == 'Misc-Prop' or b.prop == 'Misc-Prop':
-        # print("One class is miscellaneous. Don't worry about it.")
         return False 
-    if a.diff or b.diff == None:
-        # print("Null difficulty found!!", a.title, a.diff, b.title, b.diff)
+    if a.diff or b.diff == None
         return True    
     if a.diff == 9 or b.diff == 9:
-        # print ("checkDiffConflict found a prop jam here")
         return True
     if abs(a.diff - b.diff) != 2:
-        # print("checkDiffConflict found a conflict here")
         return True
     else:
         return False
 def checkPropConflict(i, ws, timeslot):
     _current_prop_list = getCurrentPropList(i)
     if len(ws.prop) > 4 or 'Misc-Prop' in ws.prop:
-        # print("Check")
         return False
     for individual_prop in ws.prop:
         individual_prop = individual_prop.replace("[","").replace("]","").replace("'",'').lower()
         _strung_prop_list = str(_current_prop_list)
-        # print("TEST: prop = ", individual_prop, "| _strung_prop_list = ", _strung_prop_list)
-        # if "hoop" in str(['poi', 'hoop']):
-        #     print(3 / 0)
         if (individual_prop in str(_current_prop_list)):
             for scheduled_class in timeslot:
                 if (individual_prop in str(scheduled_class.prop)):
-                    # print("Found a conflict: ", individual_prop, "vs", scheduled_class.prop, ". Compare difficulty.")
                     if checkDiffConflict(ws, scheduled_class):
                         return True
                 else:
                     pass
         else:
-            # print("checkDiffConflict: false. Prop1:", individual_prop, ws.diff, ". Prop list: ", str(_current_prop_list))
             return False
 def buildWorkshopSchedule(workshop_list):
-    for ws in workshop_list: #for every workshop in the list,
+    for ws in workshop_list:
         _scheduled = False
         i = 0
-        # print("SCHEDULING: " + ws.title + " with " + ws.teacher)
         while _scheduled == False:
             if i > 9:
-                # print("A workshop couldn't be scheduled for some reason.")
                 extra_workshops.append(ws)
-                _scheduled = True #not really haha!
+                _scheduled = True #kind of haha
                 break
             timeslot = list_of_times[i]
-            # print("Timeslot: ", i)
             if len(timeslot) > 8:
                 if i == 9:
-                    # print("The last timeslot is full!")
                     extra_workshops.append(ws)
                     _scheduled = True
-                # print("Timeslot", (i), "is full")
-                # print("Advancing timeslot from ", list_of_timenames[i], "to", list_of_timenames[i+1])
                 i += 1
                 continue
             elif str(ws.teacher).lower() in str(getCurrentTeacherList(i)).lower(): #check workshop teacher against timeslot (and last timeslot)
-                # print("Teacher conflict")
-                # print("Advancing timeslot from ", list_of_timenames[i], "to", list_of_timenames[i+1])
                 i += 1
                 continue
             elif checkPropConflict(i, ws, timeslot) == True:
-                # print("checkPropConflict returned True")
-                # print("Advancing timeslot from ", list_of_timenames[i], "to", list_of_timenames[i+1])
                 i += 1
                 continue
             else:
-                # print("Appending", ws.title, "-", ws.teacher, "to", list_of_timenames[i])
-                # print("Prop:", ws.prop, ws.diff, ". Prop list: ", getCurrentPropList(i))
                 timeslot.append(ws)
                 _scheduled = True
 def makeTeacherList():
@@ -224,21 +202,14 @@ def scheduleToCsv():
         i = 0
         for time in list_of_times:
             nextline = []
-            # begin row with timeslot name
             nextline.append(list_of_timenames[i])
-            #iterate over workshops in slot and add all titles
             for workshop in time:
                 nextline.append(workshop.title)
-            #append the line to CSV
             writer(csv_to_write).writerow(nextline)
-            #re-init nextline with an empty space below timeslot title
             nextline = ['']
-            #iterate over workshops in slot and add instructor names
             for workshop in time:
                 nextline.append(workshop.teacher)
-            #append the line
             writer(csv_to_write).writerow(nextline)
-            #special cases
             if i == 1 or i == 6:
                 writer(csv_to_write).writerow(['LUNCH'])
             if i == 4:
