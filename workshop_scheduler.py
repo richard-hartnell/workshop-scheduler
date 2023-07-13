@@ -281,7 +281,7 @@ def main():
     print("Length of extra_workshops: ", len(extra_workshops))
     for workshop in extra_workshops:
         print(workshop.title + " with " + workshop.teacher)
-# un-comment to write event.csv and/or make response letters
+# un-comment functions below to write event.csv and/or make response letters
     # scheduleToCsv()
     # makeLetters()
 
