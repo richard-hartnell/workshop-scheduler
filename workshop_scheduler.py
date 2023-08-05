@@ -11,7 +11,6 @@ from csv import writer
 import random
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-
 instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
 instructor_spreadsheet_range = 'WORKSHOPS!A2:AX99' #Define a range of rows. "automation_test_2" is a sheet name here.
 schedule_spreadsheet_id = ""
@@ -23,7 +22,6 @@ class Workshop:
         self.prop = list(str(prop).split(", "))
         self.diff = diff
 
-#some useful variables.
 extra_workshops = []
 extra_workshops_2 = []
 workshop_list = []
@@ -43,7 +41,6 @@ list_of_times = [fri_1000, fri_1130, fri_1430, fri_1600, fri_1730,
 list_of_timenames = ["fri_1000", "fri_1130", "fri_1430", "fri_1600", "fri_1730",
                  "sat_1000", "sat_1130", "sat_1430", "sat_1600", "sat_1730", "END_OF_TIME"]
 list_of_tech_times = [fri_1600, fri_1730] #reserved for gala performers
-#big prop jams automatically slotted. note: these never enter workshop_list.
 POIJAM = Workshop('Everyone!', 'POI JAM', 'poi', 9)
 STAFFJAM = Workshop('Everyone!', 'STAFF JAM', ['single-staff', 'multi-staff'], 9)
 HOOPJAM = Workshop('Everyone!', 'HOOP JAM', 'hoop', 9)
@@ -79,6 +76,7 @@ def fetch_schedule(): #fetches all the remote data and builds workshop_list."
             get_workshops(row)
     except HttpError as err:
         print(err)
+
 def get_workshop_difficulty(ws):
     if 'SPECIFICALLY' in ws:
         return 1
@@ -86,35 +84,37 @@ def get_workshop_difficulty(ws):
         return 2
     if 'NOT' in ws:
         return 3
+    
 def get_workshops(row):
     if row[3] != '':
-        _teacher = row[3] #read in teacher's stage name if present
+        _teacher = row[3] #stage name
     else:
         _teacher = row[2] #if no stage name, use given name
-    if row[17] != '': #if "first workshop title" isn't blank,
+    if row[17] != '': #workshop 1
         _title = row[17]
         _prop = str(row[19]).lower()
         _difficulty = get_workshop_difficulty(row[20])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-    if row[21] != "": #repeat for 2nd workshop if present
+    if row[21] != "": #workshop 2
         _title = row[21]
         _prop = str(row[23]).lower()
         _difficulty = get_workshop_difficulty(row[24])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-    if row[25] != "": #repeat for 3rd workshop if present
+    if row[25] != "":#workshop 3
         _title = row[25]
         _prop = str(row[27]).lower()
         _difficulty = get_workshop_difficulty(row[28])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
-    if row[29] != "": #repeat for 4th workshop if present
+    if row[29] != "": #workshop 4
         _title = row[29]
         _prop = str(row[31]).lower()
         _difficulty = get_workshop_difficulty(row[32])
         _workshop = Workshop(_teacher, _title, _prop, _difficulty)
         workshop_list.append(_workshop)
+
 def print_the_schedule():
     timecounter = 0
     for time in list_of_times:
@@ -122,6 +122,7 @@ def print_the_schedule():
         print("Time: " + str(list_of_timenames[timecounter - 1]))
         for thing in time:
             print("Workshop: " + thing.title + " with " + thing.teacher)
+
 def getCurrentTeacherList(i):
     current_teacher_list = []
     for workshop in list_of_times[i]:
@@ -133,11 +134,13 @@ def getCurrentTeacherList(i):
         for workshop in list_of_times[i+1]:
             current_teacher_list.append(workshop.teacher)
     return current_teacher_list
+
 def getCurrentPropList(i):
     _temp_prop_list = []
     for workshop in list_of_times[i]:
         _temp_prop_list.append(str(workshop.prop).replace("[","").replace("]","").replace("'",'').lower()) #clean and stringify
     return _temp_prop_list
+
 def checkDiffConflict(a, b):
     if len(a.prop) > 5 or len(b.prop) > 5 or a.prop == 'Misc-Prop' or b.prop == 'Misc-Prop':
         return False 
@@ -149,6 +152,7 @@ def checkDiffConflict(a, b):
         return True
     else:
         return False
+
 def checkPropConflict(i, ws, timeslot):
     _current_prop_list = getCurrentPropList(i)
     if len(ws.prop) > 4 or 'Misc-Prop' in ws.prop:
@@ -165,14 +169,18 @@ def checkPropConflict(i, ws, timeslot):
                     pass
         else:
             return False
+    
 def buildWorkshopSchedule(workshop_list):
     for ws in workshop_list:
-        _scheduled = False
+        schedule_workshop(ws)
+
+def schedule_workshop(ws):
+    _scheduled = False
         i = 0
         while _scheduled == False:
             if i > 9:
                 extra_workshops.append(ws)
-                _scheduled = True #kind of haha
+                _scheduled = True #note: it's "scheduled" in the overflow list here
                 break
             timeslot = list_of_times[i]
             if len(timeslot) > 8:
@@ -190,12 +198,14 @@ def buildWorkshopSchedule(workshop_list):
             else:
                 timeslot.append(ws)
                 _scheduled = True
+
 def makeTeacherList():
     for ws in workshop_list:
         if ws.teacher not in teacher_list:
             teacher_list.append(ws.teacher)
+
 def scheduleToCsv():
-    print("Attempting to write CSV...")
+    print("Writing schedule to CSV...")
     with open('event.csv', 'a') as csv_to_write:
         writer(csv_to_write).writerow(['','MOON','HEART','CIRCLE','SQUARE','HEX','STAR','LODGE','TENT','RANGE','CIRCLE'])
         nextline = []
@@ -215,6 +225,7 @@ def scheduleToCsv():
             if i == 4:
                 writer(csv_to_write).writerow(['SATURDAY'])
             i += 1
+
 def printSchedule():
     i = 0
     for time in list_of_times:
@@ -225,6 +236,7 @@ def printSchedule():
     print("\n Extra workshops: ")
     for ws in extra_workshops:
         print(ws. title, "with", ws.teacher)
+
 def makeLetters():
     show_list = ['Abi Lindsey',
                 'Bella LaRue',
@@ -276,12 +288,15 @@ def main():
     fetch_schedule()
     buildWorkshopSchedule(workshop_list)
     makeTeacherList()
+
+    # # error checkers if necessary:
     # printSchedule()
-    print("Length of workshop_list: ", len(workshop_list))
-    print("Length of extra_workshops: ", len(extra_workshops))
-    for workshop in extra_workshops:
-        print(workshop.title + " with " + workshop.teacher)
-# un-comment functions below to write event.csv and/or make response letters
+    # print("Length of workshop_list: ", len(workshop_list))
+    # print("Length of extra_workshops: ", len(extra_workshops))
+    # for workshop in extra_workshops:
+    #     print(workshop.title + " with " + workshop.teacher)
+
+    # un-comment functions below to write event.csv and/or make response letters
     # scheduleToCsv()
     # makeLetters()
 
