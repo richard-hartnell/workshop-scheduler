@@ -11,7 +11,7 @@ from csv import writer
 import random
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-schedule_spreadsheet_range = 'SCHEDULE!A1:K28' #Define a range of rows. "automation_test_2" is a sheet name here.
+schedule_spreadsheet_range = 'SCHEDULE!A1:K30' #Define a range of rows. "automation_test_2" is a sheet name here.
 schedule_spreadsheet_id = open('schedule_id.txt', 'r').read()
 values = []
 
@@ -49,10 +49,19 @@ def fetch_schedule(): #fetches all the remote data and builds workshop_list."
 #read in each row.
 
 def get_workshops(values):
-    for row in values:
-        print(row)
+    print(3, values[3])
+    print(5, values[5])
+    print(8, values[8])
+    print(10, values[10])
+    print(12, values[12])
+    print(16, values[16])
+    print(18, values[18])
+    print(22, values[22])
+    print(24, values[24])
+    print(26, values[26])
 
 fetch_schedule()
+
 # get_workshops(values)
 
     # if row[3] != '':
