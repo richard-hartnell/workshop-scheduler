@@ -11,9 +11,10 @@ from csv import writer
 import random
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
-instructor_spreadsheet_range = 'WORKSHOPS!A2:AX99' #Define a range of rows. "automation_test_2" is a sheet name here.
-schedule_spreadsheet_id = ""
+schedule_spreadsheet_range = 'SCHEDULE!A1:K28' #Define a range of rows. "automation_test_2" is a sheet name here.
+schedule_spreadsheet_id = open('schedule_id.txt', 'r').read()
+values = []
+
 
 def fetch_schedule(): #fetches all the remote data and builds workshop_list."
     creds = None
@@ -31,43 +32,55 @@ def fetch_schedule(): #fetches all the remote data and builds workshop_list."
     try:
         service = build('sheets', 'v4', credentials=creds)
         sheet = service.spreadsheets()
-        result = sheet.values().get(spreadsheetId=instructor_spreadsheet_id,
-                                    range=instructor_spreadsheet_range).execute()
+        result = sheet.values().get(spreadsheetId=schedule_spreadsheet_id,
+                                    range=schedule_spreadsheet_range).execute()
         values = result.get('values', [])
         if not values:
             print('No data found.')
             return
-        for row in values:
-            get_workshops(row)
+        
+        #here's what you change in the checker.
+        get_workshops(values)
+        # for row in values:
+        #     get_workshops(row)
     except HttpError as err:
         print(err)
 
-def get_workshops(row):
-    if row[3] != '':
-        _teacher = row[3] #stage name
-    else:
-        _teacher = row[2] #if no stage name, use given name
-    if row[17] != '': #workshop 1
-        _title = row[17]
-        _prop = str(row[19]).lower()
-        _difficulty = get_workshop_difficulty(row[20])
-        _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-        workshop_list.append(_workshop)
-    if row[21] != "": #workshop 2
-        _title = row[21]
-        _prop = str(row[23]).lower()
-        _difficulty = get_workshop_difficulty(row[24])
-        _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-        workshop_list.append(_workshop)
-    if row[25] != "":#workshop 3
-        _title = row[25]
-        _prop = str(row[27]).lower()
-        _difficulty = get_workshop_difficulty(row[28])
-        _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-        workshop_list.append(_workshop)
-    if row[29] != "": #workshop 4
-        _title = row[29]
-        _prop = str(row[31]).lower()
-        _difficulty = get_workshop_difficulty(row[32])
-        _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-        workshop_list.append(_workshop)
+#read in each row.
+
+def get_workshops(values):
+    for row in values:
+        print(row)
+
+fetch_schedule()
+# get_workshops(values)
+
+    # if row[3] != '':
+    #     _teacher = row[3] #stage name
+    # else:
+    #     _teacher = row[2] #if no stage name, use given name
+    # if row[17] != '': #workshop 1
+    #     _title = row[17]
+    #     _prop = str(row[19]).lower()
+    #     _difficulty = get_workshop_difficulty(row[20])
+    #     _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+    #     workshop_list.append(_workshop)
+    # if row[21] != "": #workshop 2
+    #     _title = row[21]
+    #     _prop = str(row[23]).lower()
+    #     _difficulty = get_workshop_difficulty(row[24])
+    #     _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+    #     workshop_list.append(_workshop)
+    # if row[25] != "":#workshop 3
+    #     _title = row[25]
+    #     _prop = str(row[27]).lower()
+    #     _difficulty = get_workshop_difficulty(row[28])
+    #     _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+    #     workshop_list.append(_workshop)
+    # if row[29] != "": #workshop 4
+    #     _title = row[29]
+    #     _prop = str(row[31]).lower()
+    #     _difficulty = get_workshop_difficulty(row[32])
+    #     _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+    #     workshop_list.append(_workshop)
+
