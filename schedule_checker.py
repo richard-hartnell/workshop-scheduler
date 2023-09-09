@@ -15,6 +15,21 @@ schedule_spreadsheet_range = 'SCHEDULE!A1:K30' #Define a range of rows. "automat
 schedule_spreadsheet_id = open('schedule_id.txt', 'r').read()
 values = []
 
+fri_1000 = []
+fri_1130 = []
+fri_1430 = []
+fri_1600 = []
+fri_1730 = []
+sat_1000 = []
+sat_1130 = []
+sat_1430 = []
+sat_1600 = []
+sat_1730 = []
+list_of_times = [fri_1000, fri_1130, fri_1430, fri_1600, fri_1730,
+                 sat_1000, sat_1130, sat_1430, sat_1600, sat_1730]
+list_of_timenames = ["fri_1000", "fri_1130", "fri_1430", "fri_1600", "fri_1730",
+                 "sat_1000", "sat_1130", "sat_1430", "sat_1600", "sat_1730", "END_OF_TIME"]
+
 
 def fetch_schedule(): #fetches all the remote data and builds workshop_list."
     creds = None
@@ -40,7 +55,7 @@ def fetch_schedule(): #fetches all the remote data and builds workshop_list."
             return
         
         #here's what you change in the checker.
-        get_workshops(values)
+        get_teachers(values)
         # for row in values:
         #     get_workshops(row)
     except HttpError as err:
@@ -48,19 +63,56 @@ def fetch_schedule(): #fetches all the remote data and builds workshop_list."
 
 #read in each row.
 
-def get_workshops(values):
-    print(3, values[3])
-    print(5, values[5])
-    print(8, values[8])
-    print(10, values[10])
-    print(12, values[12])
-    print(16, values[16])
-    print(18, values[18])
-    print(22, values[22])
-    print(24, values[24])
-    print(26, values[26])
+def get_teachers(values):
+    for teacher in values[3]:
+        fri_1000.append(teacher)
+    for teacher in values[5]:
+        fri_1130.append(teacher)
+    for teacher in values[8]:
+        fri_1430.append(teacher)
+    for teacher in values[10]:
+        fri_1600.append(teacher)
+    for teacher in values[12]:
+        fri_1730.append(teacher)
+    for teacher in values[16]:
+        sat_1000.append(teacher)
+    for teacher in values[18]:
+        sat_1130.append(teacher)
+    for teacher in values[22]:
+        sat_1430.append(teacher)
+    for teacher in values[24]:
+        sat_1600.append(teacher)
+    for teacher in values[26]:
+        sat_1730.append(teacher)
+
+def trim_teachers():
+    for time in list_of_times:
+        time.remove('')
+        if 'Everyone!' in time:
+            time.remove('Everyone!')
+
+def check_teachers():
+    for teacher in fri_1000:
+        if teacher in fri_1130:
+            print("Conflict found: ", teacher, "in both Friday 10:00A and Friday 11:30A")
+    for teacher in fri_1600:
+        if teacher in fri_1430:
+            print("Conflict found: ", teacher, "in both Friday 2:30P and Friday 4:00P")
+        if teacher in fri_1730:
+            print("Conflict found: ", teacher, "in both Friday 4:00P and Friday 5:30P")
+    for teacher in sat_1000:
+        if teacher in sat_1130:
+            print("Conflict found: ", teacher, "in both Saturday 10:00A and Saturday 11:30A")
+    for teacher in sat_1600:
+        if teacher in sat_1430:
+            print("Conflict found: ", teacher, "in both Saturday 2:30P and Saturday 4:00P")
+        if teacher in sat_1730:
+            print("Conflict found: ", teacher, "in both Saturday 4:00P and Saturday 5:30P")
+
 
 fetch_schedule()
+trim_teachers()
+check_teachers()
 
 # get_workshops(values)
 
