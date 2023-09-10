@@ -27,11 +27,8 @@ sat_1600 = []
 sat_1730 = []
 list_of_times = [fri_1000, fri_1130, fri_1430, fri_1600, fri_1730,
                  sat_1000, sat_1130, sat_1430, sat_1600, sat_1730]
-list_of_timenames = ["fri_1000", "fri_1130", "fri_1430", "fri_1600", "fri_1730",
-                 "sat_1000", "sat_1130", "sat_1430", "sat_1600", "sat_1730", "END_OF_TIME"]
 
-
-def fetch_schedule(): #fetches all the remote data and builds workshop_list."
+def fetch_schedule():
     creds = None
     if os.path.exists('token.json'): #this file provides credentials. if it's toast, just delete it and re-run
         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
@@ -52,16 +49,10 @@ def fetch_schedule(): #fetches all the remote data and builds workshop_list."
         values = result.get('values', [])
         if not values:
             print('No data found.')
-            return
-        
-        #here's what you change in the checker.
+            return        
         get_teachers(values)
-        # for row in values:
-        #     get_workshops(row)
     except HttpError as err:
         print(err)
-
-#read in each row.
 
 def get_teachers(values):
     for teacher in values[3]:
@@ -113,35 +104,3 @@ def check_teachers():
 fetch_schedule()
 trim_teachers()
 check_teachers()
-
-# get_workshops(values)
-
-    # if row[3] != '':
-    #     _teacher = row[3] #stage name
-    # else:
-    #     _teacher = row[2] #if no stage name, use given name
-    # if row[17] != '': #workshop 1
-    #     _title = row[17]
-    #     _prop = str(row[19]).lower()
-    #     _difficulty = get_workshop_difficulty(row[20])
-    #     _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-    #     workshop_list.append(_workshop)
-    # if row[21] != "": #workshop 2
-    #     _title = row[21]
-    #     _prop = str(row[23]).lower()
-    #     _difficulty = get_workshop_difficulty(row[24])
-    #     _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-    #     workshop_list.append(_workshop)
-    # if row[25] != "":#workshop 3
-    #     _title = row[25]
-    #     _prop = str(row[27]).lower()
-    #     _difficulty = get_workshop_difficulty(row[28])
-    #     _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-    #     workshop_list.append(_workshop)
-    # if row[29] != "": #workshop 4
-    #     _title = row[29]
-    #     _prop = str(row[31]).lower()
-    #     _difficulty = get_workshop_difficulty(row[32])
-    #     _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-    #     workshop_list.append(_workshop)
-
