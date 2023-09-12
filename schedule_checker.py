@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os.path
 import pandas as pd
+from timeslots import *
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -14,19 +15,6 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 schedule_spreadsheet_range = 'SCHEDULE!A1:K30' #Define a range of rows. "automation_test_2" is a sheet name here.
 schedule_spreadsheet_id = open('schedule_id.txt', 'r').read()
 values = []
-
-fri_1000 = []
-fri_1130 = []
-fri_1430 = []
-fri_1600 = []
-fri_1730 = []
-sat_1000 = []
-sat_1130 = []
-sat_1430 = []
-sat_1600 = []
-sat_1730 = []
-list_of_times = [fri_1000, fri_1130, fri_1430, fri_1600, fri_1730,
-                 sat_1000, sat_1130, sat_1430, sat_1600, sat_1730]
 
 def fetch_schedule():
     creds = None
@@ -49,7 +37,7 @@ def fetch_schedule():
         values = result.get('values', [])
         if not values:
             print('No data found.')
-            return        
+            return
         get_teachers(values)
     except HttpError as err:
         print(err)
@@ -99,7 +87,6 @@ def check_teachers():
             print("Conflict found: ", teacher, "in both Saturday 2:30P and Saturday 4:00P")
         if teacher in sat_1730:
             print("Conflict found: ", teacher, "in both Saturday 4:00P and Saturday 5:30P")
-
 
 fetch_schedule()
 trim_teachers()

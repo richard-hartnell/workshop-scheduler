@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os.path
 import pandas as pd
+from timeslots import *
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -25,26 +26,16 @@ class Workshop:
 extra_workshops = []
 extra_workshops_2 = []
 workshop_list = []
-fri_1000 = []
-fri_1130 = []
-fri_1430 = []
-fri_1600 = []
-fri_1730 = []
-sat_1000 = []
-sat_1130 = []
-sat_1430 = []
-sat_1600 = []
-sat_1730 = []
 teacher_list = []
-list_of_times = [fri_1000, fri_1130, fri_1430, fri_1600, fri_1730,
-                 sat_1000, sat_1130, sat_1430, sat_1600, sat_1730]
 list_of_timenames = ["fri_1000", "fri_1130", "fri_1430", "fri_1600", "fri_1730",
                  "sat_1000", "sat_1130", "sat_1430", "sat_1600", "sat_1730", "END_OF_TIME"]
 list_of_tech_times = [fri_1600, fri_1730] #reserved for gala performers
+
 POIJAM = Workshop('Everyone!', 'POI JAM', 'poi', 9)
 STAFFJAM = Workshop('Everyone!', 'STAFF JAM', ['single-staff', 'multi-staff'], 9)
 HOOPJAM = Workshop('Everyone!', 'HOOP JAM', 'hoop', 9)
 JUGGLEJAM = Workshop('Everyone!', 'JUGGLE JAM', ['ball', 'club'], 9)
+
 fri_1430.append(POIJAM)
 sat_1130.append(STAFFJAM)
 sat_1430.append(JUGGLEJAM)
@@ -142,16 +133,19 @@ def getCurrentPropList(i):
     return _temp_prop_list
 
 def checkDiffConflict(a, b):
-    if len(a.prop) > 5 or len(b.prop) > 5 or a.prop == 'Misc-Prop' or b.prop == 'Misc-Prop':
-        return False 
-    if a.diff or b.diff == None
-        return True    
-    if a.diff == 9 or b.diff == 9:
-        return True
-    if abs(a.diff - b.diff) != 2:
-        return True
-    else:
-        return False
+    try:
+        if len(a.prop) > 5 or len(b.prop) > 5 or a.prop == 'Misc-Prop' or b.prop == 'Misc-Prop':
+            return False 
+        if a.diff or b.diff == None:
+            return True    
+        if a.diff == 9 or b.diff == 9:
+            return True
+        if abs(a.diff - b.diff) != 2:
+            return True
+        else:
+            return False
+    except:
+        print("Error: difficulty broken")
 
 def checkPropConflict(i, ws, timeslot):
     _current_prop_list = getCurrentPropList(i)
@@ -176,28 +170,28 @@ def buildWorkshopSchedule(workshop_list):
 
 def schedule_workshop(ws):
     _scheduled = False
-        i = 0
-        while _scheduled == False:
-            if i > 9:
+    i = 0
+    while _scheduled == False:
+        if i > 9:
+            extra_workshops.append(ws)
+            _scheduled = True #note: it's "scheduled" in the overflow list here
+            break
+        timeslot = list_of_times[i]
+        if len(timeslot) > 8:
+            if i == 9:
                 extra_workshops.append(ws)
-                _scheduled = True #note: it's "scheduled" in the overflow list here
-                break
-            timeslot = list_of_times[i]
-            if len(timeslot) > 8:
-                if i == 9:
-                    extra_workshops.append(ws)
-                    _scheduled = True
-                i += 1
-                continue
-            elif str(ws.teacher).lower() in str(getCurrentTeacherList(i)).lower(): #check workshop teacher against timeslot (and last timeslot)
-                i += 1
-                continue
-            elif checkPropConflict(i, ws, timeslot) == True:
-                i += 1
-                continue
-            else:
-                timeslot.append(ws)
                 _scheduled = True
+            i += 1
+            continue
+        elif str(ws.teacher).lower() in str(getCurrentTeacherList(i)).lower(): #check workshop teacher against timeslot (and last timeslot)
+            i += 1
+            continue
+        elif checkPropConflict(i, ws, timeslot) == True:
+            i += 1
+            continue
+        else:
+            timeslot.append(ws)
+            _scheduled = True
 
 def makeTeacherList():
     for ws in workshop_list:
@@ -290,7 +284,7 @@ def main():
     makeTeacherList()
 
     # # error checkers if necessary:
-    # printSchedule()
+    printSchedule()
     # print("Length of workshop_list: ", len(workshop_list))
     # print("Length of extra_workshops: ", len(extra_workshops))
     # for workshop in extra_workshops:
