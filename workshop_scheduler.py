@@ -1,5 +1,8 @@
 from __future__ import print_function
 
+import requests
+import re
+from urllib.parse import urlparse, parse_qs
 import os.path
 import pandas as pd
 from timeslots import *
@@ -278,13 +281,42 @@ See you in the woods!
 Richard Hartnell
 Team Workshops, Kindle NW''')
 
+def download_google_drive_file(link, destination):
+    # Parse the file ID from the link
+    file_id = extract_file_id(link)
+
+    if file_id:
+        # Construct the download URL
+        download_url = f"https://drive.google.com/uc?id={file_id}"
+
+        # Send a GET request to the download URL
+        response = requests.get(download_url)
+
+        if response.status_code == 200:
+            # Save the content to the specified destination
+            with open(destination, 'wb') as f:
+                f.write(response.content)
+
+            print(f"Downloaded file to {destination}")
+        else:
+            print("Failed to download the file.")
+    else:
+        print("Invalid Google Drive link.")
+
+def extract_file_id(link):
+    # Extract the file ID from the 'id' query parameter
+    parsed_url = urlparse(link)
+    query_params = parse_qs(parsed_url.query)
+    file_id = query_params.get('id', [None])[0]
+    return file_id
+
 def main():
-    fetch_schedule()
-    buildWorkshopSchedule(workshop_list)
-    makeTeacherList()
+    # fetch_schedule()
+    # buildWorkshopSchedule(workshop_list)
+    # makeTeacherList()
 
     # # error checkers if necessary:
-    printSchedule()
+    # printSchedule()
     # print("Length of workshop_list: ", len(workshop_list))
     # print("Length of extra_workshops: ", len(extra_workshops))
     # for workshop in extra_workshops:
@@ -293,6 +325,9 @@ def main():
     # un-comment functions below to write event.csv and/or make response letters
     # scheduleToCsv()
     # makeLetters()
+    test_google_drive_link = "https://drive.google.com/open?id=1Mox59Xl7YfIsPbGZmm8f-X39ogaNSCwm"
+    download_destination = "downloaded_file.jpg"
+    download_google_drive_file(test_google_drive_link, download_destination)
 
 if __name__ == '__main__':
     main()
