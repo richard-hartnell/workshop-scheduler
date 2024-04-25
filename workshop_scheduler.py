@@ -16,7 +16,7 @@ import random
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
-instructor_spreadsheet_range = 'WORKSHOPS!A2:AX99' #Define a range of rows. "automation_test_2" is a sheet name here.
+instructor_spreadsheet_range = 'Workshops!A2:AL99' #Define a range of rows. "automation_test_2" is a sheet name here.
 schedule_spreadsheet_id = ""
 
 class Workshop:
@@ -80,34 +80,39 @@ def get_workshop_difficulty(ws):
         return 3
     
 def get_workshops(row):
-    if row[3] != '':
-        _teacher = row[3] #stage name
+    #get teacher name
+    if row[4] != ".":
+        _teacher = row[4] #stage name
     else:
-        _teacher = row[2] #if no stage name, use given name
-    if row[17] != '': #workshop 1
-        _title = row[17]
-        _prop = str(row[19]).lower()
-        _difficulty = get_workshop_difficulty(row[20])
-        _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-        workshop_list.append(_workshop)
-    if row[21] != "": #workshop 2
-        _title = row[21]
-        _prop = str(row[23]).lower()
-        _difficulty = get_workshop_difficulty(row[24])
-        _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-        workshop_list.append(_workshop)
-    if row[25] != "":#workshop 3
-        _title = row[25]
-        _prop = str(row[27]).lower()
-        _difficulty = get_workshop_difficulty(row[28])
-        _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-        workshop_list.append(_workshop)
-    if row[29] != "": #workshop 4
-        _title = row[29]
-        _prop = str(row[31]).lower()
-        _difficulty = get_workshop_difficulty(row[32])
-        _workshop = Workshop(_teacher, _title, _prop, _difficulty)
-        workshop_list.append(_workshop)
+        _teacher = row[3] #if no stage name, use given name
+    #get teacher workshops
+    try:
+        if row[5]: #workshop 1
+            _title = row[5]
+            _prop = str(row[7]).lower()
+            _difficulty = get_workshop_difficulty(row[8])
+            _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+            workshop_list.append(_workshop)
+        if row[9]: #workshop 2
+            _title = row[9]
+            _prop = str(row[11]).lower()
+            _difficulty = get_workshop_difficulty(row[12])
+            _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+            workshop_list.append(_workshop)
+        if row[13]:#workshop 3
+            _title = row[13]
+            _prop = str(row[15]).lower()
+            _difficulty = get_workshop_difficulty(row[16])
+            _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+            workshop_list.append(_workshop)
+        if row[17]: #workshop 4
+            _title = row[17]
+            _prop = str(row[19]).lower()
+            _difficulty = get_workshop_difficulty(row[20])
+            _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+            workshop_list.append(_workshop)
+    except:
+        print("Error with " + _teacher + "'s workshops")
 
 def print_the_schedule():
     timecounter = 0
@@ -260,7 +265,7 @@ def makeLetters():
         shopstring = '\n'.join(str(shop) for shop in shops)
         if teacher in show_list:
             totalmoney += 100
-            show_decision = "We also selected your act for the show! Please expect an additional email from Riel Green, our show coordinator, following this email."
+            show_decision = "We also selected your act for the show! Please expect an additional email from Kendall, our show coordinator, following this email."
         else:
             show_decision = "You are not on the roster for this year's show. A little less glory, but a lot fewer responsibilities...!"
         with open(filename, 'a+') as file:
@@ -278,7 +283,6 @@ We have $XX and Y event passes budgeted to compensate you for this contribution 
 
 See you in the woods!
 
-Richard Hartnell
 Team Workshops, Kindle NW''')
 
 def download_google_drive_file(link, destination):
@@ -311,23 +315,23 @@ def extract_file_id(link):
     return file_id
 
 def main():
-    # fetch_schedule()
-    # buildWorkshopSchedule(workshop_list)
-    # makeTeacherList()
+    fetch_schedule()
+    buildWorkshopSchedule(workshop_list)
+    makeTeacherList()
 
     # # error checkers if necessary:
-    # printSchedule()
-    # print("Length of workshop_list: ", len(workshop_list))
-    # print("Length of extra_workshops: ", len(extra_workshops))
-    # for workshop in extra_workshops:
-    #     print(workshop.title + " with " + workshop.teacher)
+    printSchedule()
+    print("Length of workshop_list: ", len(workshop_list))
+    print("Length of extra_workshops: ", len(extra_workshops))
+    for workshop in extra_workshops:
+        print(workshop.title + " with " + workshop.teacher)
 
     # un-comment functions below to write event.csv and/or make response letters
     # scheduleToCsv()
     # makeLetters()
-    test_google_drive_link = "https://drive.google.com/open?id=1Mox59Xl7YfIsPbGZmm8f-X39ogaNSCwm"
-    download_destination = "downloaded_file.jpg"
-    download_google_drive_file(test_google_drive_link, download_destination)
+    # test_google_drive_link = "https://drive.google.com/open?id=1Mox59Xl7YfIsPbGZmm8f-X39ogaNSCwm"
+    # download_destination = "downloaded_file.jpg"
+    # download_google_drive_file(test_google_drive_link, download_destination)
 
 if __name__ == '__main__':
     main()
