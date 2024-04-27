@@ -255,6 +255,17 @@ def makeLetters():
                 'Blu Hoopz',
                 'Kawika Lee',
                 'Mx Marchandt']
+    staff_list = ['Annabelle Wright',
+            'Brian Hirschberger',
+            'The Mighty Bearsnake',
+            'Davi Lux',
+            'Erika Ryn',
+            'Starshine the clown',
+            'SpaceFairy',
+            'Riel Green',
+            'Katiefishface',
+            'T-Spoon',
+            'Lady Aetheria']
     for teacher in teacher_list:
         filename = "./letters/" + teacher.replace(" ", "_") + ".txt"
         shops = []
@@ -271,20 +282,25 @@ def makeLetters():
             show_decision = "You are not on the roster for this year's show. A little less glory, but a lot fewer responsibilities...!"
         with open(filename, 'a+') as file:
             file.write(f'''Hellooooo {teacher}!
-                        
+
 So happy to finally send you this email confirming your acceptance to the faculty of Kindle NW 2024!!
 
 We've selected your following workshop offerings for our schedule:
 
 {shopstring}
 
-(please note that we might edit your workshop title on the final schedule)
+(please remember that we might edit your workshop titles for length and clarity on the final schedule)
 
 {show_decision}
 
-You will not have to buy a ticket to attend the event. We also have ${totalmoney} budgeted to compensate you for your contribution, which includes a travel stipend. Thanks for your willingness to be part of this by-artists-for-artists thing.
+''')
+            if teacher in staff_list:
+                file.write(f'''Since you are on staff, you will already not have to buy a ticket to attend the event. We also have ${totalmoney + (10 * len(shops))} budgeted to compensate you for your contribution, which includes a bonus for adding instruction on top of your other KNW duties. Thanks for your willingness to be part of this by-artists-for-artists thing.''')
+            else:
+                file.write(f'''You will not have to buy a ticket to attend the event. We also have ${totalmoney} budgeted to compensate you for your contribution, which includes a travel stipend. Thanks for your willingness to be part of this by-artists-for-artists thing.''')
+            file.write(f'''
 
-If you are flying, please please *please* buy your flights right away while they are cheap (best airports are PDX, EUG, SEA, or possibly YVR). If you need an advance for travel costs, we have a few stipends available for that but please reach out right away.
+If you are flying, please please *please* buy your flights now while they are cheap (best airports are PDX, EUG, SEA, or possibly YVR). If you need an advance for travel costs, we have a few stipends available up front but please reach out right away.
 
 If you have any questions or updates for us, you can just reply to this email.
 
