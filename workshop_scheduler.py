@@ -111,8 +111,8 @@ def get_workshops(row):
             _difficulty = get_workshop_difficulty(row[20])
             _workshop = Workshop(_teacher, _title, _prop, _difficulty)
             workshop_list.append(_workshop)
-    except:
-        print("Error with " + _teacher + "'s workshops")
+    except Exception as error:
+        print("Error with " + _teacher + "'s workshops:", error)
 
 def print_the_schedule():
     timecounter = 0
@@ -152,8 +152,8 @@ def checkDiffConflict(a, b):
             return True
         else:
             return False
-    except:
-        print("Error: difficulty broken")
+    except Exception as error:
+        print("DIFFICULTY ERROR: " + a.teacher + a.title + "and" + b.title + ". Error: ", error)
 
 def checkPropConflict(i, ws, timeslot):
     _current_prop_list = getCurrentPropList(i)
@@ -208,6 +208,8 @@ def makeTeacherList():
 
 def scheduleToCsv():
     print("Writing schedule to CSV...")
+    if os.path.exists('event.csv'):
+        os.remove('event.csv')
     with open('event.csv', 'a') as csv_to_write:
         writer(csv_to_write).writerow(['','MOON','HEART','CIRCLE','SQUARE','HEX','STAR','LODGE','TENT','RANGE','CIRCLE'])
         nextline = []
@@ -223,6 +225,7 @@ def scheduleToCsv():
                 nextline.append(workshop.teacher)
             writer(csv_to_write).writerow(nextline)
             if i == 1 or i == 6:
+
                 writer(csv_to_write).writerow(['LUNCH'])
             if i == 4:
                 writer(csv_to_write).writerow(['SATURDAY'])
@@ -240,20 +243,18 @@ def printSchedule():
         print(ws. title, "with", ws.teacher)
 
 def makeLetters():
-    show_list = ['Abi Lindsey',
-                'Bella LaRue',
-                'Exuro Piechocki',
-                'Scramble James',
-                'Alison Lockfeld',
-                'Haley Doran',
-                'Enrico Vinholi',
-                'Lance Woods',
-                'Ling Ling Lee',
-                'Eli March',
-                'Kendall Moyer',
-                'Matan Presberg',
-                'Allie T',
-                'Tyfoods']
+    show_list = ['The FloWarrior',
+                'Emma Hörnell',
+                'Eric Sipos',
+                'Riel Green',
+                'Soy Sauce & Seasoned Salt',
+                'Rosalie Ash',
+                'SolRiso',
+                'Master Ong',
+                'Melwebstar',
+                'Blu Hoopz',
+                'Kawika Lee',
+                'Mx Marchandt']
     for teacher in teacher_list:
         filename = "./letters/" + teacher.replace(" ", "_") + ".txt"
         shops = []
@@ -271,19 +272,26 @@ def makeLetters():
         with open(filename, 'a+') as file:
             file.write(f'''Hellooooo {teacher}!
                         
-So happy to finally send you this email confirming your offer from Kindle NW. Thanks for hanging on for as long as you have for this info.
+So happy to finally send you this email confirming your acceptance to the faculty of Kindle NW 2024!!
 
-We've selected your following workshop offerings for our schedule: 
+We've selected your following workshop offerings for our schedule:
 
 {shopstring}
 
+(please note that we might edit your workshop title on the final schedule)
+
 {show_decision}
 
-We have $XX and Y event passes budgeted to compensate you for this contribution to the event. Thanks for your willingness to be part of this by-artists-for-artists thing <3 If you have any questions or updates for us, you can just reply to this email. If you need an advance for travel costs, we have a few stipends available for that but please reach out right away.
+You will not have to buy a ticket to attend the event. We also have ${totalmoney} budgeted to compensate you for your contribution, which includes a travel stipend. Thanks for your willingness to be part of this by-artists-for-artists thing.
 
-See you in the woods!
+If you are flying, please please *please* buy your flights right away while they are cheap (best airports are PDX, EUG, SEA, or possibly YVR). If you need an advance for travel costs, we have a few stipends available for that but please reach out right away.
 
-Team Workshops, Kindle NW''')
+If you have any questions or updates for us, you can just reply to this email.
+
+We are so excited that you can be a part of this year's incredible roster and can't wait to see you in the woods!
+
+<3,
+The Faculteam @ Kindle NW''')
 
 def download_google_drive_file(link, destination):
     # Parse the file ID from the link
@@ -320,15 +328,15 @@ def main():
     makeTeacherList()
 
     # # error checkers if necessary:
-    printSchedule()
-    print("Length of workshop_list: ", len(workshop_list))
-    print("Length of extra_workshops: ", len(extra_workshops))
+    # printSchedule()
     for workshop in extra_workshops:
         print(workshop.title + " with " + workshop.teacher)
+    print("Length of workshop_list: ", len(workshop_list))
+    print("Length of extra_workshops: ", len(extra_workshops))
 
     # un-comment functions below to write event.csv and/or make response letters
-    # scheduleToCsv()
-    # makeLetters()
+    scheduleToCsv()
+    makeLetters()
     # test_google_drive_link = "https://drive.google.com/open?id=1Mox59Xl7YfIsPbGZmm8f-X39ogaNSCwm"
     # download_destination = "downloaded_file.jpg"
     # download_google_drive_file(test_google_drive_link, download_destination)
