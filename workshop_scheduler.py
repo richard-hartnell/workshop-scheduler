@@ -1,9 +1,8 @@
 from __future__ import print_function
-
 import requests
 import re
 from urllib.parse import urlparse, parse_qs
-import os.path
+import os
 import pandas as pd
 from timeslots import *
 from google.auth.transport.requests import Request
@@ -17,7 +16,8 @@ import random
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
 instructor_spreadsheet_range = 'Workshops!A2:AL99' #Define a range of rows. "automation_test_2" is a sheet name here.
-schedule_spreadsheet_id = ""
+schedule_spreadsheet_range = 'SCHEDULE!A1:K30' #Define a range of rows. "automation_test_2" is a sheet name here.
+schedule_spreadsheet_id = open('schedule_id.txt', 'r').read()
 
 class Workshop:
     def __init__(self, teacher, title, prop, diff):
@@ -43,6 +43,78 @@ fri_1430.append(POIJAM)
 sat_1130.append(STAFFJAM)
 sat_1430.append(JUGGLEJAM)
 sat_1600.append(HOOPJAM)
+
+def get_teachers(values):
+    for teacher in values[3]:
+        fri_1000.append(teacher)
+    for teacher in values[5]:
+        fri_1130.append(teacher)
+    for teacher in values[8]:
+        fri_1430.append(teacher)
+    for teacher in values[10]:
+        fri_1600.append(teacher)
+    for teacher in values[12]:
+        fri_1730.append(teacher)
+    for teacher in values[16]:
+        sat_1000.append(teacher)
+    for teacher in values[18]:
+        sat_1130.append(teacher)
+    for teacher in values[22]:
+        sat_1430.append(teacher)
+    for teacher in values[24]:
+        sat_1600.append(teacher)
+    for teacher in values[26]:
+        sat_1730.append(teacher)
+
+def check_schedule():
+    creds = None
+    if os.path.exists('token.json'): #this file provides credentials. if it's toast, just delete it and re-run
+        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                'credentials.json', SCOPES)
+            creds = flow.run_local_server(port=0)
+        with open('token.json', 'w') as token:
+            token.write(creds.to_json())
+    try:
+        service = build('sheets', 'v4', credentials=creds)
+        sheet = service.spreadsheets()
+        result = sheet.values().get(spreadsheetId=schedule_spreadsheet_id,
+                                    range=schedule_spreadsheet_range).execute()
+        values = result.get('values', [])
+        if not values:
+            print('No data found.')
+            return
+        get_teachers(values)
+    except HttpError as err:
+        print(err)
+
+def trim_teachers():
+    for time in list_of_times:
+        time.remove('')
+        if 'Everyone!' in time:
+            time.remove('Everyone!')
+
+def check_teachers():
+    for teacher in fri_1000:
+        if teacher in fri_1130:
+            print("Conflict found: ", teacher, "in both Friday 10:00A and Friday 11:30A")
+    for teacher in fri_1600:
+        if teacher in fri_1430:
+            print("Conflict found: ", teacher, "in both Friday 2:30P and Friday 4:00P")
+        if teacher in fri_1730:
+            print("Conflict found: ", teacher, "in both Friday 4:00P and Friday 5:30P")
+    for teacher in sat_1000:
+        if teacher in sat_1130:
+            print("Conflict found: ", teacher, "in both Saturday 10:00A and Saturday 11:30A")
+    for teacher in sat_1600:
+        if teacher in sat_1430:
+            print("Conflict found: ", teacher, "in both Saturday 2:30P and Saturday 4:00P")
+        if teacher in sat_1730:
+            print("Conflict found: ", teacher, "in both Saturday 4:00P and Saturday 5:30P")
 
 def fetch_schedule(): #fetches all the remote data and builds workshop_list."
     creds = None
@@ -215,7 +287,7 @@ def scheduleToCsv():
         nextline = []
         i = 0
         for time in list_of_times:
-            nextline = []
+            # nextline = []
             nextline.append(list_of_timenames[i])
             for workshop in time:
                 nextline.append(workshop.title)
@@ -352,7 +424,7 @@ def main():
 
     # un-comment functions below to write event.csv and/or make response letters
     scheduleToCsv()
-    makeLetters()
+    # makeLetters()
     # test_google_drive_link = "https://drive.google.com/open?id=1Mox59Xl7YfIsPbGZmm8f-X39ogaNSCwm"
     # download_destination = "downloaded_file.jpg"
     # download_google_drive_file(test_google_drive_link, download_destination)
