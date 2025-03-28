@@ -17,7 +17,7 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
 instructor_spreadsheet_range = 'Workshops!A2:AL99' #Define a range of rows. "automation_test_2" is a sheet name here.
 schedule_spreadsheet_range = 'SCHEDULE!A1:K30' #Define a range of rows. "automation_test_2" is a sheet name here.
-schedule_spreadsheet_id = open('schedule_id.txt', 'r').read()
+# schedule_spreadsheet_id = open('schedule_id.txt', 'r').read()
 
 class Workshop:
     def __init__(self, teacher, title, prop, diff):
@@ -423,7 +423,7 @@ def main():
     print("Length of extra_workshops: ", len(extra_workshops))
 
     # un-comment functions below to write event.csv and/or make response letters
-    scheduleToCsv()
+    # scheduleToCsv()
     # makeLetters()
     # test_google_drive_link = "https://drive.google.com/open?id=1Mox59Xl7YfIsPbGZmm8f-X39ogaNSCwm"
     # download_destination = "downloaded_file.jpg"
