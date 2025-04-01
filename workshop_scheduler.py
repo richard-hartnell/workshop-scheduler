@@ -315,29 +315,8 @@ def printSchedule():
         print(ws. title, "with", ws.teacher)
 
 def makeLetters():
-    show_list = ['The FloWarrior',
-                'Emma Hörnell',
-                'Eric Sipos',
-                'Riel Green',
-                'Soy Sauce & Seasoned Salt',
-                'Rosalie Ash',
-                'SolRiso',
-                'Master Ong',
-                'Melwebstar',
-                'Blu Hoopz',
-                'Kawika Lee',
-                'Mx Marchandt']
-    staff_list = ['Annabelle Wright',
-            'Brian Hirschberger',
-            'The Mighty Bearsnake',
-            'Davi Lux',
-            'Erika Ryn',
-            'Starshine the clown',
-            'SpaceFairy',
-            'Riel Green',
-            'Katiefishface',
-            'T-Spoon',
-            'Lady Aetheria']
+    show_list = []
+    staff_list = []
     for teacher in teacher_list:
         filename = "./letters/" + teacher.replace(" ", "_") + ".txt"
         shops = []
