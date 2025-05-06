@@ -15,7 +15,7 @@ import random
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 instructor_spreadsheet_id = open('spreadsheet_id.txt', 'r').read()
-instructor_spreadsheet_range = 'Workshops!A2:AL99' #Define a range of rows. "automation_test_2" is a sheet name here.
+instructor_spreadsheet_range = 'Workshops!A2:AL66' #Define a range of rows. "automation_test_2" is a sheet name here.
 schedule_spreadsheet_range = 'SCHEDULE!A1:K30' #Define a range of rows. "automation_test_2" is a sheet name here.
 # schedule_spreadsheet_id = open('schedule_id.txt', 'r').read()
 
@@ -153,34 +153,34 @@ def get_workshop_difficulty(ws):
     
 def get_workshops(row):
     #get teacher name
-    if row[4] != ".":
+    if row[4] != "":
         _teacher = row[4] #stage name
     else:
-        _teacher = row[3] #if no stage name, use given name
+        _teacher = row[2] #if no stage name, use given name
     #get teacher workshops
     try:
-        if row[5]: #workshop 1
-            _title = row[5]
+        if row[6]: #workshop 1
+            _title = row[6]
             _prop = str(row[7]).lower()
-            _difficulty = get_workshop_difficulty(row[8])
+            _difficulty = get_workshop_difficulty(row[9])
             _workshop = Workshop(_teacher, _title, _prop, _difficulty)
             workshop_list.append(_workshop)
-        if row[9]: #workshop 2
-            _title = row[9]
+        if row[10]: #workshop 2
+            _title = row[10]
             _prop = str(row[11]).lower()
-            _difficulty = get_workshop_difficulty(row[12])
+            _difficulty = get_workshop_difficulty(row[13])
             _workshop = Workshop(_teacher, _title, _prop, _difficulty)
             workshop_list.append(_workshop)
-        if row[13]:#workshop 3
-            _title = row[13]
+        if row[14]:#workshop 3
+            _title = row[14]
             _prop = str(row[15]).lower()
-            _difficulty = get_workshop_difficulty(row[16])
+            _difficulty = get_workshop_difficulty(row[17])
             _workshop = Workshop(_teacher, _title, _prop, _difficulty)
             workshop_list.append(_workshop)
-        if row[17]: #workshop 4
-            _title = row[17]
+        if row[18]: #workshop 4
+            _title = row[18]
             _prop = str(row[19]).lower()
-            _difficulty = get_workshop_difficulty(row[20])
+            _difficulty = get_workshop_difficulty(row[21])
             _workshop = Workshop(_teacher, _title, _prop, _difficulty)
             workshop_list.append(_workshop)
     except Exception as error:
@@ -257,7 +257,7 @@ def schedule_workshop(ws):
             _scheduled = True #note: it's "scheduled" in the overflow list here
             break
         timeslot = list_of_times[i]
-        if len(timeslot) > 8:
+        if len(timeslot) > 7:
             if i == 9:
                 extra_workshops.append(ws)
                 _scheduled = True
@@ -283,7 +283,7 @@ def scheduleToCsv():
     if os.path.exists('event.csv'):
         os.remove('event.csv')
     with open('event.csv', 'a') as csv_to_write:
-        writer(csv_to_write).writerow(['','MOON','HEART','CIRCLE','SQUARE','HEX','STAR','LODGE','TENT','RANGE','CIRCLE'])
+        writer(csv_to_write).writerow(['','MOON','HEART','CIRCLE','SQUARE','HEX','STAR','LODGE','TENT','CIRCLE'])
         nextline = []
         i = 0
         for time in list_of_times:
@@ -395,7 +395,7 @@ def main():
     makeTeacherList()
 
     # # error checkers if necessary:
-    # printSchedule()
+    printSchedule()
     for workshop in extra_workshops:
         print(workshop.title + " with " + workshop.teacher)
     print("Length of workshop_list: ", len(workshop_list))
