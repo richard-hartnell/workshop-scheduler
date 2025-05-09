@@ -39,10 +39,11 @@ STAFFJAM = Workshop('Everyone!', 'STAFF JAM', ['single-staff', 'multi-staff'], 9
 HOOPJAM = Workshop('Everyone!', 'HOOP JAM', 'hoop', 9)
 JUGGLEJAM = Workshop('Everyone!', 'JUGGLE JAM', ['ball', 'club'], 9)
 
-fri_1430.append(POIJAM)
-sat_1130.append(STAFFJAM)
-sat_1430.append(JUGGLEJAM)
-sat_1600.append(HOOPJAM)
+# # cutting out the "jam" slots for 2025
+# fri_1430.append(POIJAM)
+# sat_1130.append(STAFFJAM)
+# sat_1430.append(JUGGLEJAM)
+# sat_1600.append(HOOPJAM)
 
 def get_teachers(values):
     for teacher in values[3]:
@@ -287,17 +288,16 @@ def scheduleToCsv():
         nextline = []
         i = 0
         for time in list_of_times:
-            # nextline = []
+            nextline = []
             nextline.append(list_of_timenames[i])
             for workshop in time:
                 nextline.append(workshop.title)
             writer(csv_to_write).writerow(nextline)
-            nextline = ['']
+            nextline = [] #maybe you broke it here.
             for workshop in time:
                 nextline.append(workshop.teacher)
             writer(csv_to_write).writerow(nextline)
             if i == 1 or i == 6:
-
                 writer(csv_to_write).writerow(['LUNCH'])
             if i == 4:
                 writer(csv_to_write).writerow(['SATURDAY'])
@@ -396,14 +396,14 @@ def main():
 
     # # error checkers if necessary:
     printSchedule()
-    for workshop in extra_workshops:
-        print(workshop.title + " with " + workshop.teacher)
+    # for workshop in extra_workshops:
+    #     print(workshop.title + " with " + workshop.teacher)
     print("Length of workshop_list: ", len(workshop_list))
     print("Length of extra_workshops: ", len(extra_workshops))
 
     # un-comment functions below to write event.csv and/or make response letters
-    # scheduleToCsv()
     # makeLetters()
+    # scheduleToCsv()
     # test_google_drive_link = "https://drive.google.com/open?id=1Mox59Xl7YfIsPbGZmm8f-X39ogaNSCwm"
     # download_destination = "downloaded_file.jpg"
     # download_google_drive_file(test_google_drive_link, download_destination)
