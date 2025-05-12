@@ -160,7 +160,7 @@ def get_workshops(row):
     else:
         _teacher = row[2] #if no stage name, use given name
     #get teacher travel stipend
-    if row[5]:
+    if row[5] != "":
         _travel = row[5]
     #get teacher workshops
     try:
@@ -168,24 +168,28 @@ def get_workshops(row):
             _title = row[6]
             _prop = str(row[7]).lower()
             _difficulty = get_workshop_difficulty(row[9])
+            _travel = row[5]
             _workshop = Workshop(_teacher, _title, _prop, _difficulty, _travel)
             workshop_list.append(_workshop)
         if row[10]: #workshop 2
             _title = row[10]
             _prop = str(row[11]).lower()
             _difficulty = get_workshop_difficulty(row[13])
+            _travel = row[5]
             _workshop = Workshop(_teacher, _title, _prop, _difficulty, _travel)
             workshop_list.append(_workshop)
         if row[14]:#workshop 3
             _title = row[14]
             _prop = str(row[15]).lower()
             _difficulty = get_workshop_difficulty(row[17])
+            _travel = row[5]
             _workshop = Workshop(_teacher, _title, _prop, _difficulty, _travel)
             workshop_list.append(_workshop)
         if row[18]: #workshop 4
             _title = row[18]
             _prop = str(row[19]).lower()
             _difficulty = get_workshop_difficulty(row[21])
+            _travel = row[5]
             _workshop = Workshop(_teacher, _title, _prop, _difficulty, _travel)
             workshop_list.append(_workshop)
     except Exception as error:
@@ -331,7 +335,7 @@ def makeLetters():
                  'Perkulator',
                  'Spades',
                  'Checkers',
-                 'Yonnic Collins',
+                 'Yonnic Colins',
                  'Rager Rabbit']
     staff_list = ['Bella LaRue',
                   'Memory Elena',
@@ -357,13 +361,18 @@ def makeLetters():
     for teacher in teacher_list:
         filename = "./letters/" + teacher.replace(" ", "_") + ".txt"
         shops = []
+        travel_stipend = 0
         show_decision = ""
         for ws in workshop_list:
             if ws.teacher == teacher:
                 shops.append(ws.title)
-        totalmoney = len(shops) * 50
-        if shops[0].travel:
-            totalmoney += shops[0].travel
+                if ws.travel:
+                    travel_stipend = int(ws.travel)
+                else:
+                    travel_stipend = 0
+        totalmoney = travel_stipend + (len(shops) * 50)
+        # if shops[0].travel:
+        #     totalmoney += shops[0].travel
         shopstring = '\n'.join(str(shop) for shop in shops)
         if teacher in show_list:
             totalmoney += 100
@@ -379,20 +388,20 @@ We've selected your following workshop offerings for our schedule:
 
 {shopstring}
 
-(please remember that we might edit your workshop titles for length and clarity on the final schedule)
+Please remember that we might edit / have edited your workshop titles for length and clarity on the final schedule.
 
 {show_decision}
 
 ''')
             if teacher in staff_list:
-                file.write(f'''Since you are on staff, you will already not have to buy a ticket to attend the event. We also have ${totalmoney + (10 * len(shops))} budgeted to compensate you for your contribution, which includes a bonus for adding instruction on top of your other KNW duties. Thanks for your willingness to be part of this by-artists-for-artists thing.
-                           
-If you are flying, please please *please* buy your flights now while they are cheap (best airports are PDX, EUG, SEA, or possibly YVR). If you need an advance for travel costs, we have a few stipends available up front but please reach out right away.
+                file.write(f'''Since we gather that you are ticketed by another department, you will already not have to buy a ticket to attend the event. We also have ${totalmoney + (10 * len(shops))} budgeted to compensate you for your contribution, which includes a bonus for adding instruction on top of your other KNW duties. Thanks for your willingness to be part of this by-artists-for-artists thing.
 ''')
             else:
-                file.write(f'''You will not have to buy a ticket to attend the event. We also have ${totalmoney} budgeted to compensate you for your contribution, which includes a travel stipend. Thanks for your willingness to be part of this by-artists-for-artists thing.''')
-            file.write(f'''
+                file.write(f'''You will not have to buy a ticket to attend the event. We also have ${totalmoney} budgeted to compensate you for your contribution, which includes a travel stipend. Thanks for your willingness to be part of this by-artists-for-artists thing.
 
+If you are flying, please please *please* buy your flights now while they are cheap (best airports are usually PDX, EUG, SEA, or possibly YVR). If you need an advance for travel costs, we have a few stipends available up front but please reach out right away.
+                           ''')
+            file.write(f'''
 If you have any questions or updates for us, you can just reply to this email.
 
 We are so excited that you can be a part of this year's incredible roster and can't wait to see you in the woods!
