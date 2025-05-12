@@ -319,8 +319,41 @@ def printSchedule():
         print(ws. title, "with", ws.teacher)
 
 def makeLetters():
-    show_list = []
-    staff_list = []
+    show_list = ['Kalen',
+                 'Juggle Jawns',
+                 'Natale Luma',
+                 'The Mighty BearSnake',
+                 'Krisstina from Ninja Pyrate',
+                 'Patrick Fitzgerald',
+                 'Kassflows',
+                 'Logan Goethe',
+                 'Bella LaRue',
+                 'Perkulator',
+                 'Spades',
+                 'Checkers',
+                 'Yonnic Collins',
+                 'Rager Rabbit']
+    staff_list = ['Bella LaRue',
+                  'Memory Elena',
+                  'Miss Pinto',
+                  'Bales Fox',
+                  'SpaceFairy',
+                  'Gage',
+                  'Lady Aetheric',
+                  'Xia Jinx',
+                  'Jeremy Cinders',
+                  'Raven',
+                  'Brian H',
+                  'Logan Goethe',
+                  'Vitz',
+                  'The Mighty BearSnake',
+                  'Nico Evers',
+                  'Lisa Lewis',
+                  'Pockets the Wizard',
+                  'Erika Ryn Dean',
+                  'Dairy',
+                  'Excelsior',
+                  ]
     for teacher in teacher_list:
         filename = "./letters/" + teacher.replace(" ", "_") + ".txt"
         shops = []
@@ -352,12 +385,13 @@ We've selected your following workshop offerings for our schedule:
 
 ''')
             if teacher in staff_list:
-                file.write(f'''Since you are on staff, you will already not have to buy a ticket to attend the event. We also have ${totalmoney + (10 * len(shops))} budgeted to compensate you for your contribution, which includes a bonus for adding instruction on top of your other KNW duties. Thanks for your willingness to be part of this by-artists-for-artists thing.''')
+                file.write(f'''Since you are on staff, you will already not have to buy a ticket to attend the event. We also have ${totalmoney + (10 * len(shops))} budgeted to compensate you for your contribution, which includes a bonus for adding instruction on top of your other KNW duties. Thanks for your willingness to be part of this by-artists-for-artists thing.
+                           
+If you are flying, please please *please* buy your flights now while they are cheap (best airports are PDX, EUG, SEA, or possibly YVR). If you need an advance for travel costs, we have a few stipends available up front but please reach out right away.
+''')
             else:
                 file.write(f'''You will not have to buy a ticket to attend the event. We also have ${totalmoney} budgeted to compensate you for your contribution, which includes a travel stipend. Thanks for your willingness to be part of this by-artists-for-artists thing.''')
             file.write(f'''
-
-If you are flying, please please *please* buy your flights now while they are cheap (best airports are PDX, EUG, SEA, or possibly YVR). If you need an advance for travel costs, we have a few stipends available up front but please reach out right away.
 
 If you have any questions or updates for us, you can just reply to this email.
 
@@ -401,14 +435,14 @@ def main():
     makeTeacherList()
 
     # # error checkers if necessary:
-    printSchedule()
+    # printSchedule()
     # for workshop in extra_workshops:
     #     print(workshop.title + " with " + workshop.teacher)
     print("Length of workshop_list: ", len(workshop_list))
     print("Length of extra_workshops: ", len(extra_workshops))
 
     # un-comment functions below to write event.csv and/or make response letters
-    # makeLetters()
+    makeLetters()
     # scheduleToCsv()
     # test_google_drive_link = "https://drive.google.com/open?id=1Mox59Xl7YfIsPbGZmm8f-X39ogaNSCwm"
     # download_destination = "downloaded_file.jpg"
