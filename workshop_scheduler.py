@@ -20,11 +20,12 @@ schedule_spreadsheet_range = 'SCHEDULE!A1:K30' #Define a range of rows. "automat
 # schedule_spreadsheet_id = open('schedule_id.txt', 'r').read()
 
 class Workshop:
-    def __init__(self, teacher, title, prop, diff):
+    def __init__(self, teacher, title, prop, diff, travel=None):
         self.teacher = teacher
         self.title = title
         self.prop = list(str(prop).split(", "))
         self.diff = diff
+        self.travel = travel
 
 extra_workshops = []
 extra_workshops_2 = []
@@ -158,31 +159,34 @@ def get_workshops(row):
         _teacher = row[4] #stage name
     else:
         _teacher = row[2] #if no stage name, use given name
+    #get teacher travel stipend
+    if row[5]:
+        _travel = row[5]
     #get teacher workshops
     try:
         if row[6]: #workshop 1
             _title = row[6]
             _prop = str(row[7]).lower()
             _difficulty = get_workshop_difficulty(row[9])
-            _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+            _workshop = Workshop(_teacher, _title, _prop, _difficulty, _travel)
             workshop_list.append(_workshop)
         if row[10]: #workshop 2
             _title = row[10]
             _prop = str(row[11]).lower()
             _difficulty = get_workshop_difficulty(row[13])
-            _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+            _workshop = Workshop(_teacher, _title, _prop, _difficulty, _travel)
             workshop_list.append(_workshop)
         if row[14]:#workshop 3
             _title = row[14]
             _prop = str(row[15]).lower()
             _difficulty = get_workshop_difficulty(row[17])
-            _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+            _workshop = Workshop(_teacher, _title, _prop, _difficulty, _travel)
             workshop_list.append(_workshop)
         if row[18]: #workshop 4
             _title = row[18]
             _prop = str(row[19]).lower()
             _difficulty = get_workshop_difficulty(row[21])
-            _workshop = Workshop(_teacher, _title, _prop, _difficulty)
+            _workshop = Workshop(_teacher, _title, _prop, _difficulty, _travel)
             workshop_list.append(_workshop)
     except Exception as error:
         print("Error with " + _teacher + "'s workshops:", error)
@@ -325,16 +329,18 @@ def makeLetters():
             if ws.teacher == teacher:
                 shops.append(ws.title)
         totalmoney = len(shops) * 50
+        if shops[0].travel:
+            totalmoney += shops[0].travel
         shopstring = '\n'.join(str(shop) for shop in shops)
         if teacher in show_list:
             totalmoney += 100
-            show_decision = "We also selected your act for the show! Please expect an additional email from Kendall, our show coordinator, following this email."
+            show_decision = "We also selected your act for the show! Please expect an additional email from Riel Gold, our show coordinator, following this email."
         else:
             show_decision = "You are not on the roster for this year's show. A little less glory, but a lot fewer responsibilities...!"
         with open(filename, 'a+') as file:
             file.write(f'''Hellooooo {teacher}!
 
-So happy to finally send you this email confirming your acceptance to the faculty of Kindle NW 2024!!
+So happy to finally send you this email confirming your invitation to the faculty of Kindle NW 2025!!
 
 We've selected your following workshop offerings for our schedule:
 
